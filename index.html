@@ -488,7 +488,7 @@ header { background:var(--header-bg); padding:0.9rem 1.25rem 0; position:sticky;
               <div class="dial-hl-bot"></div>
               <div class="dial-fade-t"></div>
               <div class="dial-fade-b"></div>
-              <div class="dial-scroll" id="asi-dial" onscroll="onAsiDial()"></div>
+              <div class="dial-scroll" id="asi-dial" onscroll="onAsiDial()" onpointerdown="blurKeyboard()"></div>
             </div>
             <input class="dial-custom" id="asi-dial-custom" placeholder="or type custom block range…" oninput="onAsiCustom()">
           </div>
@@ -922,6 +922,11 @@ function getDialVal(scrollEl) {
   const idx = Math.max(0, Math.min(Math.round(scrollEl.scrollTop / DIAL_H), DIAL_VALS.length - 1));
   return DIAL_VALS[idx];
 }
+// Touching the scroll wheel to pick a block should dismiss the on-screen keyboard.
+function blurKeyboard() {
+  const el = document.activeElement;
+  if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) el.blur();
+}
 function firstRunStreet() {
   return day?.runs?.[0]?.coverageZone?.[0]?.street || '';
 }
@@ -1244,12 +1249,16 @@ function toggleAddStreet() {
   const el = document.getElementById('add-street-inline');
   el.classList.toggle('hidden', !addStreetOpen);
   if (addStreetOpen) {
+    // Start the wheel where this run's last block left off (e.g. 700s), not back at 100s.
+    const run = activeRun();
+    const lastZone = run?.coverageZone?.[run.coverageZone.length - 1];
+    const startBlock = (lastZone && DIAL_VALS.includes(lastZone.blockRange)) ? lastZone.blockRange : '100s';
     document.getElementById('asi-street-name').value = currentRunStreet();
     document.getElementById('asi-dial-custom').value = '';
-    asiBlockRange = '100s';
+    asiBlockRange = startBlock;
     const dialEl = document.getElementById('asi-dial');
     buildDialItems(dialEl);
-    requestAnimationFrame(() => dialScrollTo(dialEl, '100s'));
+    requestAnimationFrame(() => dialScrollTo(dialEl, startBlock));
     document.getElementById('asi-street-name').focus();
     document.getElementById('asi-street-name').select();
   }
@@ -1328,17 +1337,24 @@ function submitSpecial(result) {
 
 // ── RUN MODAL ──
 function openRunModal() {
-  const defaultStreet = lastRunStreet();
-  zonePairs = [{ street: defaultStreet, blockRange: '100s' }];
+  // Prefill with the last run's street so the field is never empty, then let GPS correct it.
+  const lastStreet = lastRunStreet();
+  zonePairs = [{ street: lastStreet, blockRange: '100s' }];
   document.getElementById('run-start-time').value = nowTime();
   document.getElementById('run-premises-input').value = '';
   renderZonePairs();
   document.getElementById('modal-run').classList.add('open');
-  if (!defaultStreet) {
-    fetchGpsStreet(road => {
-      if (zonePairs[0] && !zonePairs[0].street) { zonePairs[0].street = road; renderZonePairs(); }
-    });
-  }
+  // Always check GPS on a new run: if we've moved to a different street, update it automatically.
+  // Only overrides the prefill while the user hasn't typed their own street.
+  fetchGpsStreet(road => {
+    const gps = normalizeStreetName(road);
+    if (!gps || !zonePairs[0]) return;
+    if (zonePairs[0].street !== lastStreet) return;            // user edited it — leave alone
+    if (normalizeStreetName(zonePairs[0].street) === gps) return; // same street — nothing to change
+    zonePairs[0].street = road;
+    const input = document.querySelector('#zp-0 .form-input');
+    if (input) input.value = road;
+  });
 }
 function renderZonePairs() {
   document.getElementById('zone-pairs-container').innerHTML = zonePairs.map((zp, i) => `
@@ -1354,7 +1370,7 @@ function renderZonePairs() {
             <div class="dial-hl-bot"></div>
             <div class="dial-fade-t"></div>
             <div class="dial-fade-b"></div>
-            <div class="dial-scroll" id="dial-${i}" onscroll="onZoneDial(${i})"></div>
+            <div class="dial-scroll" id="dial-${i}" onscroll="onZoneDial(${i})" onpointerdown="blurKeyboard()"></div>
           </div>
           <input class="dial-custom" id="dcustom-${i}" placeholder="or type custom block range…"
             value="${DIAL_VALS.includes(zp.blockRange)?'':esc(zp.blockRange)}"
@@ -1417,7 +1433,7 @@ function renderEditZonePairs() {
             <div class="dial-hl-bot"></div>
             <div class="dial-fade-t"></div>
             <div class="dial-fade-b"></div>
-            <div class="dial-scroll" id="edit-dial-${i}" onscroll="onEditZoneDial(${i})"></div>
+            <div class="dial-scroll" id="edit-dial-${i}" onscroll="onEditZoneDial(${i})" onpointerdown="blurKeyboard()"></div>
           </div>
           <input class="dial-custom" id="edit-dcustom-${i}" placeholder="or type custom block range…"
             value="${DIAL_VALS.includes(zp.blockRange)?'':esc(zp.blockRange)}"
