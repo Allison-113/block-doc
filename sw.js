@@ -1,5 +1,7 @@
 // Block Doc service worker — makes the app open offline and stay installed.
-// Bump CACHE when you change the shell to force an update.
+// On deploy, the Pages workflow rewrites this cache name with the commit SHA
+// so every release busts the cache automatically. The 'v1' default is only
+// used for local/offline testing; bump it by hand only if testing without a deploy.
 const CACHE = 'blockdoc-v1';
 const SHELL = [
   './',
