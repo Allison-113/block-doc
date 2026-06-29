@@ -1,0 +1,50 @@
+name: Deploy to GitHub Pages
+
+# Deploys Block Doc to GitHub Pages on every push to main.
+# Before the upload, it stamps the service worker's cache name with the
+# commit SHA so each deploy gets a fresh cache — installed PWAs pick up
+# changes automatically, with no manual cache bumping.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Let an in-progress deploy finish, but only keep the newest queued one.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Stamp service worker cache version with commit SHA
+        run: |
+          sha="${GITHUB_SHA::7}"
+          sed -i "s/const CACHE = '[^']*';/const CACHE = 'blockdoc-${sha}';/" sw.js
+          echo "Service worker cache version:"
+          grep "const CACHE" sw.js
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
