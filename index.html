@@ -1,0 +1,2032 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Block Doc">
+<meta name="theme-color" content="#0e6f69">
+<title>Block Doc</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-512.png">
+<script>
+// Register the service worker so the app installs, opens offline, and keeps its data.
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+[data-theme="light"] {
+  --bg:#ece1ca; --surface:#f8f1e0; --surface2:#efe6d1;
+  --border:#dccba4; --border2:#c8b387; --card-line:#2c2014;
+  --text:#33261a; --muted:#94815c; --concrete:#8a7858;
+  --moss:#14756e; --moss-dim:#0e5650; --moss-light:rgba(20,117,110,0.12);
+  --ochre:#bb8418; --ochre-dim:#946811; --ochre-glow:rgba(187,132,24,0.13);
+  --rust:#bb5326; --rust-dim:#974019;
+  --danger:#c0481c; --info:#3a6f91;
+  --header-bg:#0e6f69; --header-ink:#f6efdd; --header-sub:rgba(246,239,221,0.72); --header-line:rgba(246,239,221,0.32);
+  --block-bg:#2c2014; --block-ink:#f6efdd; --block-sub:#c8b387;
+  --grain-op:0.05;
+}
+[data-theme="dark"] {
+  --bg:#15110b; --surface:#211b12; --surface2:#2a2216;
+  --border:#3d3322; --border2:#52452c; --card-line:#5a4c30;
+  --text:#ece1ca; --muted:#9c8a64; --concrete:#8a7858;
+  --moss:#34a89c; --moss-dim:#1f7068; --moss-light:rgba(52,168,156,0.16);
+  --ochre:#dcab3c; --ochre-dim:#caa030; --ochre-glow:rgba(220,171,60,0.13);
+  --rust:#cf6a3a; --rust-dim:#a44e28;
+  --danger:#d4673e; --info:#5e93b8;
+  --header-bg:#0c4f4a; --header-ink:#ece1ca; --header-sub:rgba(236,225,202,0.68); --header-line:rgba(236,225,202,0.26);
+  --block-bg:#241d12; --block-ink:#ece1ca; --block-sub:#9c8a64;
+  --grain-op:0.07;
+}
+
+body { background:var(--bg); color:var(--text); font-family:'Jost',sans-serif; min-height:100vh; max-width:480px; margin:0 auto; overflow-x:hidden; transition:background .2s,color .2s; }
+body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E"); opacity:var(--grain-op); pointer-events:none; z-index:0; }
+body::after { content:''; position:fixed; inset:0; background-image:radial-gradient(rgba(20,117,110,0.05) 1.1px, transparent 1.4px); background-size:20px 20px; pointer-events:none; z-index:0; }
+.content, header, #totals-bar, .modal-overlay, #back-guard { position:relative; z-index:1; }
+
+/* HEADER */
+header { background:var(--header-bg); padding:0.9rem 1.25rem 0; position:sticky; top:0; z-index:100; box-shadow:0 3px 18px rgba(20,16,8,0.28); overflow:hidden; }
+.hdr-burst { position:absolute; top:-44px; right:-30px; width:150px; height:150px; opacity:0.13; pointer-events:none; }
+.header-row { display:flex; justify-content:space-between; align-items:center; padding-bottom:0.65rem; position:relative; }
+.header-logo { display:flex; align-items:center; gap:0.5rem; }
+.logo-mark { width:30px; height:30px; flex-shrink:0; }
+.logo-b { font-family:'Jost',sans-serif; font-size:1.55rem; font-weight:600; color:var(--header-ink); letter-spacing:-0.01em; line-height:1; }
+.logo-sep { color:var(--ochre); font-size:1.2rem; margin:0 0.12rem; font-weight:400; font-family:'Space Mono',monospace; }
+.logo-d { font-family:'Jost',sans-serif; font-size:1.55rem; font-weight:500; font-style:italic; color:var(--ochre); letter-spacing:-0.01em; line-height:1; }
+.logo-v { font-family:'Space Mono',monospace; font-size:0.55rem; color:var(--header-sub); margin-left:0.35rem; align-self:flex-end; padding-bottom:0.28rem; letter-spacing:0.1em; }
+.header-right { display:flex; align-items:center; gap:0.6rem; position:relative; }
+#header-date { font-family:'Space Mono',monospace; font-size:0.62rem; color:var(--header-sub); letter-spacing:0.14em; text-transform:uppercase; }
+#theme-btn { background:none; border:1px solid var(--header-line); border-radius:4px; color:var(--header-ink); font-size:0.62rem; padding:0.22rem 0.55rem; cursor:pointer; font-family:'Space Mono',monospace; letter-spacing:0.06em; transition:all .15s; }
+#theme-btn:hover { border-color:var(--ochre); color:var(--ochre); }
+.header-meta { display:flex; align-items:center; gap:0.55rem; padding-bottom:0.6rem; position:relative; }
+.hdr-tag { font-family:'Space Mono',monospace; font-size:0.55rem; letter-spacing:0.24em; color:var(--ochre); text-transform:uppercase; flex-shrink:0; }
+.hdr-dotline { flex:1; height:6px; color:var(--header-line); background-image:radial-gradient(currentColor 1.1px, transparent 1.3px); background-size:10px 6px; background-position:left center; background-repeat:repeat-x; }
+.header-rule { display:flex; flex-direction:column; gap:0; margin-left:-1.25rem; margin-right:-1.25rem; }
+.hr-thick { height:4px; background:var(--ochre); }
+.hr-thin { height:1.5px; background:var(--moss); opacity:0.85; }
+
+/* SECTION ORNAMENT */
+.sec-rule { display:flex; align-items:center; gap:0.5rem; margin:0.9rem 0; }
+.sec-rule::before, .sec-rule::after { content:''; flex:1; height:1px; background:var(--border2); }
+.sec-rule-g { color:var(--ochre); font-size:0.62rem; flex-shrink:0; }
+.stamp-label { font-family:'Space Mono',monospace; font-size:0.58rem; letter-spacing:0.22em; color:var(--muted); text-transform:uppercase; display:block; margin-bottom:0.5rem; }
+
+.content { padding:1rem 1.25rem 9.5rem; }
+
+/* SETUP */
+#screen-setup { display:none; }
+#screen-setup.active { display:block; }
+.setup-card { background:var(--surface); border:1.5px solid var(--card-line); border-top:3px solid var(--moss); border-radius:10px; overflow:hidden; box-shadow:0 2px 0 var(--border); }
+.setup-head { background:var(--block-bg); padding:0.95rem 1.15rem; }
+.setup-eyebrow { font-family:'Space Mono',monospace; font-size:0.58rem; letter-spacing:0.22em; color:var(--ochre); text-transform:uppercase; margin-bottom:0.3rem; }
+.setup-title { font-family:'Jost',sans-serif; font-size:1.4rem; font-weight:600; color:var(--block-ink); letter-spacing:-0.01em; }
+.setup-body { padding:1.1rem 1.15rem 1.3rem; }
+.setup-date { font-family:'Jost',sans-serif; font-style:italic; font-weight:500; font-size:1.35rem; color:var(--ochre); margin-bottom:1rem; }
+.chip-row { display:flex; flex-wrap:wrap; gap:0.4rem; margin-bottom:0.75rem; }
+.member-chip { padding:0.42rem 0.9rem; border:1px solid var(--border2); border-radius:4px; font-family:'Space Mono',monospace; font-size:0.78rem; letter-spacing:0.03em; cursor:pointer; transition:all .15s; background:var(--surface2); color:var(--muted); user-select:none; }
+.member-chip.on { background:var(--moss); border-color:var(--moss); color:#fff; }
+.member-chip.add { border-style:dashed; color:var(--moss); border-color:var(--moss-dim); background:transparent; }
+
+.setup-appts { margin-top:0.15rem; }
+.setup-appt-empty { font-size:0.82rem; color:var(--muted); font-style:italic; padding:0.25rem 0 0.5rem; font-family:'Jost',sans-serif; }
+.setup-appt-row { display:flex; align-items:center; gap:0.6rem; padding:0.4rem 0; border-bottom:1px solid var(--border); }
+.sap-time { font-family:'Space Mono',monospace; font-size:0.82rem; color:var(--ochre-dim); min-width:58px; }
+.sap-addr { flex:1; font-size:0.82rem; color:var(--muted); }
+.sap-rm { background:none; border:none; color:var(--border2); font-size:0.85rem; cursor:pointer; padding:0.1rem 0.3rem; transition:color .15s; }
+.sap-rm:hover { color:var(--danger); }
+.setup-appt-inline { display:none; margin-top:0.5rem; background:var(--surface2); border:1px solid var(--border); border-radius:7px; padding:0.7rem 0.85rem; }
+.setup-appt-inline.open { display:block; }
+.sai-row { display:flex; gap:0.45rem; align-items:center; margin-bottom:0.45rem; }
+.sai-row input { background:transparent; border:none; border-bottom:1px solid var(--border2); color:var(--text); font-family:'Jost',sans-serif; font-size:0.9rem; padding:0.3rem 0.1rem; outline:none; -webkit-appearance:none; }
+.sai-row input:focus { border-color:var(--moss); }
+#sap-time { width:96px; }
+#sap-addr { flex:1; }
+.sai-btns { display:flex; gap:0.4rem; }
+.sai-add-btn { padding:0.42rem 0.9rem; background:var(--moss); border:none; border-radius:5px; color:#fff; font-size:0.82rem; cursor:pointer; font-family:'Jost',sans-serif; font-weight:500; }
+.sai-cancel-btn { padding:0.42rem 0.75rem; background:transparent; border:1px solid var(--border2); border-radius:5px; color:var(--muted); font-size:0.82rem; cursor:pointer; font-family:'Jost',sans-serif; }
+.setup-appt-add-link { display:inline-block; background:none; border:none; color:var(--muted); font-size:0.72rem; letter-spacing:0.06em; cursor:pointer; padding:0.4rem 0; font-family:'Space Mono',monospace; transition:color .15s; text-transform:lowercase; }
+.setup-appt-add-link:hover { color:var(--ochre); }
+.primary-btn { width:100%; padding:1.05rem; background:var(--moss); border:none; border-radius:7px; color:#fff; font-family:'Jost',sans-serif; font-size:1.05rem; font-weight:600; letter-spacing:0.04em; cursor:pointer; transition:background .15s,transform .1s; margin-top:0.25rem; }
+.primary-btn:active { background:var(--moss-dim); transform:scale(0.98); }
+.primary-btn:disabled { opacity:0.32; cursor:not-allowed; transform:none; }
+
+/* MAIN */
+#screen-main { display:none; }
+#screen-main.active { display:block; }
+#team-bar { background:var(--block-bg); border-radius:8px; padding:0.6rem 0.95rem; margin-bottom:0.85rem; display:flex; align-items:center; justify-content:space-between; }
+.team-left { display:flex; align-items:baseline; gap:0.6rem; }
+.team-label { font-family:'Space Mono',monospace; font-size:0.55rem; letter-spacing:0.2em; color:var(--ochre); text-transform:uppercase; }
+#team-names { font-family:'Jost',sans-serif; font-size:0.92rem; font-weight:500; color:var(--block-ink); }
+.icon-btn { background:none; border:none; color:var(--block-sub); font-size:0.72rem; cursor:pointer; padding:0.15rem 0.25rem; transition:color .15s; font-family:'Space Mono',monospace; }
+.icon-btn:hover { color:var(--ochre); }
+
+/* ACTIVE RUN CARD */
+#run-card { background:var(--surface); border:1.5px solid var(--card-line); border-top:3px solid var(--moss); border-radius:10px; margin-bottom:0.85rem; overflow:hidden; display:none; box-shadow:0 2px 0 var(--border); }
+.run-card-head { background:var(--block-bg); padding:0.8rem 1rem 0.7rem; }
+.rch-top { display:flex; align-items:flex-start; justify-content:space-between; gap:0.75rem; }
+.run-eyebrow { font-family:'Space Mono',monospace; font-size:0.55rem; letter-spacing:0.2em; color:var(--ochre); text-transform:uppercase; margin-bottom:0.18rem; }
+#run-zone-display { font-family:'Jost',sans-serif; font-size:1.1rem; font-weight:500; color:var(--block-ink); line-height:1.25; }
+.rch-right { display:flex; flex-direction:column; align-items:flex-end; gap:0.35rem; }
+#run-timer { font-family:'Space Mono',monospace; font-weight:700; font-size:1.5rem; color:var(--ochre); letter-spacing:0.02em; line-height:1; }
+.add-street-trigger { background:var(--ochre); border:none; border-radius:5px; color:var(--block-bg); font-family:'Space Mono',monospace; font-size:0.56rem; font-weight:700; letter-spacing:0.1em; padding:0.26rem 0.5rem; cursor:pointer; transition:all .15s; text-transform:uppercase; white-space:nowrap; }
+.add-street-trigger:hover { opacity:0.88; }
+
+.add-street-inline { margin-top:0.65rem; padding:0.65rem 0.75rem; background:rgba(0,0,0,0.18); border:1px solid var(--header-line); border-radius:6px; }
+.add-street-inline.hidden { display:none; }
+.asi-label { font-family:'Space Mono',monospace; font-size:0.54rem; letter-spacing:0.16em; color:var(--ochre); text-transform:uppercase; margin-bottom:0.45rem; }
+.asi-street { width:100%; background:transparent; border:none; border-bottom:1px solid var(--header-line); color:var(--block-ink); font-family:'Jost',sans-serif; font-size:0.9rem; padding:0.3rem 0; outline:none; margin-bottom:0.45rem; -webkit-appearance:none; }
+.asi-street::placeholder { color:var(--block-sub); }
+.asi-street:focus { border-color:var(--ochre); }
+.asi-btns { display:flex; gap:0.4rem; margin-top:0.5rem; }
+.asi-add { flex:1; padding:0.6rem; background:var(--moss); border:none; border-radius:5px; color:#fff; font-family:'Jost',sans-serif; font-weight:600; font-size:0.9rem; cursor:pointer; }
+.asi-cancel { padding:0.6rem 0.9rem; background:transparent; border:1px solid var(--header-line); border-radius:5px; color:var(--block-sub); font-family:'Space Mono',monospace; font-size:0.7rem; cursor:pointer; }
+
+.run-card-body { padding:0.9rem 1rem; }
+
+.premises-row { display:flex; align-items:center; gap:0.6rem; padding:0.45rem 0 0.7rem; border-bottom:1px solid var(--border); margin-bottom:0.7rem; }
+.prem-meta-row { display:flex; gap:0.5rem; padding:0 0 0.7rem; margin-bottom:0.7rem; }
+.prem-meta-chip { flex:1; display:flex; flex-direction:column; align-items:center; gap:0.16rem; border-radius:7px; padding:0.5rem 0.4rem; }
+.prem-meta-chip.contact { background:var(--moss); }
+.prem-meta-chip.inspect { background:var(--danger); }
+.prem-meta-lbl { font-family:'Space Mono',monospace; font-size:0.54rem; letter-spacing:0.12em; color:rgba(255,255,255,0.82); text-transform:uppercase; }
+.prem-meta-val { font-family:'Space Mono',monospace; font-weight:700; font-size:1.5rem; color:#fff; line-height:1; }
+.prem-label { font-family:'Space Mono',monospace; font-size:0.55rem; letter-spacing:0.18em; color:var(--muted); text-transform:uppercase; flex-shrink:0; }
+.prem-tick { display:flex; align-items:center; gap:0.5rem; margin-left:auto; }
+.prem-val { font-family:'Space Mono',monospace; font-weight:700; font-size:2.2rem; color:var(--text); line-height:1; min-width:2.8rem; text-align:center; }
+.prem-val.unset { font-size:0.9rem; color:var(--muted); font-style:italic; font-weight:400; font-family:'Jost',sans-serif; min-width:3.5rem; }
+.p-dec, .p-inc { width:40px; height:40px; border-radius:8px; flex-shrink:0; font-size:1.4rem; font-family:'Space Mono',monospace; cursor:pointer; display:flex; align-items:center; justify-content:center; -webkit-tap-highlight-color:transparent; transition:all .1s; line-height:1; border:none; }
+.p-dec { background:var(--block-bg); color:var(--block-ink); }
+.p-inc { background:var(--moss); color:#fff; font-size:1.6rem; }
+.p-dec:active { opacity:0.7; }
+.p-inc:active { background:var(--moss-dim); }
+
+.section-hdr { font-family:'Space Mono',monospace; font-size:0.55rem; letter-spacing:0.2em; color:var(--muted); text-transform:uppercase; margin-bottom:0.42rem; }
+
+.fast-tally { display:grid; grid-template-columns:1fr 1fr; gap:0.45rem; margin-bottom:0.6rem; }
+.tally-cell { background:var(--surface2); border:1.5px solid var(--card-line); border-radius:8px; padding:0.55rem 0.45rem; display:flex; flex-direction:column; align-items:center; gap:0.25rem; }
+.tally-cell.t-inspect { border-top:3px solid var(--danger); }
+.tally-cell.t-handed { border-top:3px solid var(--ochre); }
+.tally-lbl { font-family:'Space Mono',monospace; font-size:0.55rem; letter-spacing:0.1em; color:var(--muted); text-transform:uppercase; }
+.tally-num { font-family:'Space Mono',monospace; font-weight:700; font-size:2.2rem; color:var(--text); line-height:1; min-height:2.4rem; display:flex; align-items:center; transition:transform .15s; }
+.tally-ctrl { display:flex; gap:0.3rem; width:100%; }
+.t-dec, .t-inc { flex:1; padding:0.55rem 0; border-radius:5px; font-size:1.15rem; font-weight:700; cursor:pointer; text-align:center; line-height:1; font-family:'Space Mono',monospace; -webkit-tap-highlight-color:transparent; transition:all .1s; border:1px solid var(--border2); }
+.t-dec { background:var(--surface); color:var(--text); }
+.t-inc { background:var(--moss); color:#fff; border-color:var(--moss); font-size:1.4rem; }
+.t-dec:active { background:var(--surface2); }
+.t-inc:active { background:var(--moss-dim); }
+
+.outcomes-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:0.35rem; margin-bottom:0.6rem; }
+.out-cell { background:var(--surface2); border:1px solid var(--border2); border-radius:7px; padding:0.4rem 0.22rem; display:flex; flex-direction:column; align-items:center; gap:0.18rem; }
+.out-lbl { font-family:'Space Mono',monospace; font-size:0.5rem; color:var(--muted); text-align:center; line-height:1.3; letter-spacing:0.05em; text-transform:uppercase; }
+.out-num { font-family:'Space Mono',monospace; font-weight:700; font-size:1.35rem; color:var(--text); line-height:1; transition:transform .15s; }
+.out-ctrl { display:flex; gap:0.2rem; width:100%; }
+.o-dec, .o-inc { flex:1; padding:0.32rem 0; background:var(--surface); border:1px solid var(--border2); border-radius:4px; color:var(--text); font-size:0.9rem; font-weight:700; cursor:pointer; text-align:center; font-family:'Space Mono',monospace; -webkit-tap-highlight-color:transparent; transition:all .1s; }
+.o-inc:active { background:var(--moss); color:#fff; border-color:var(--moss); }
+.o-dec:active { opacity:0.65; }
+
+.special-zone { background:var(--ochre-glow); border:1px solid var(--ochre-dim); border-radius:8px; padding:0.6rem 0.7rem; margin-bottom:0.5rem; }
+.special-hdr { color:var(--ochre-dim) !important; margin-bottom:0.42rem; }
+.special-addr-row { display:flex; gap:0.4rem; align-items:flex-end; margin-bottom:0.45rem; }
+#house-input { width:70px; min-width:70px; background:transparent; border:none; border-bottom:2px solid var(--moss); color:var(--text); font-family:'Space Mono',monospace; font-size:1rem; font-weight:700; padding:0.3rem 0; outline:none; transition:border-color .15s; -webkit-appearance:none; }
+#house-input:focus { border-color:var(--ochre); }
+#house-input::placeholder { color:var(--muted); font-weight:400; font-size:0.82rem; }
+#street-ctx { flex:1; font-family:'Jost',sans-serif; font-size:0.85rem; color:var(--muted); padding:0.3rem 0; border-bottom:1px solid var(--border); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.spec-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.35rem; }
+.spec-btn { padding:0.64rem 0.4rem; background:var(--surface); border:1px solid var(--ochre-dim); border-radius:6px; color:var(--ochre-dim); font-size:0.76rem; font-weight:600; cursor:pointer; text-align:center; font-family:'Jost',sans-serif; -webkit-tap-highlight-color:transparent; transition:all .1s; line-height:1.25; }
+.spec-btn:disabled { opacity:0.3; cursor:not-allowed; }
+.spec-btn:active:not(:disabled) { background:var(--ochre); color:#fff; border-color:var(--ochre); }
+
+.derived-row { display:flex; align-items:center; gap:0.5rem; padding:0.32rem 0.05rem; }
+.derived-lbl { font-family:'Space Mono',monospace; font-size:0.55rem; letter-spacing:0.12em; color:var(--muted); text-transform:uppercase; flex:1; }
+.derived-val { font-family:'Space Mono',monospace; font-weight:700; font-size:1.1rem; color:var(--text); }
+.derived-tag { font-family:'Space Mono',monospace; font-size:0.5rem; color:var(--muted); background:var(--surface2); border:1px solid var(--border2); border-radius:3px; padding:0.08rem 0.3rem; letter-spacing:0.08em; text-transform:uppercase; }
+
+.run-card-foot { padding:0.65rem 1rem 0.9rem; border-top:1px solid var(--border); display:flex; gap:0.5rem; }
+.missed-btn { padding:0.75rem; background:transparent; border:1px solid var(--border2); border-radius:7px; color:var(--muted); font-family:'Space Mono',monospace; font-size:0.65rem; letter-spacing:0.06em; cursor:pointer; transition:all .15s; white-space:nowrap; text-transform:uppercase; }
+.missed-btn:hover { border-color:var(--ochre); color:var(--ochre); }
+.stop-btn { flex:1; padding:0.75rem; background:transparent; border:2px solid var(--danger); border-radius:7px; color:var(--danger); font-family:'Jost',sans-serif; font-size:1rem; font-weight:600; cursor:pointer; transition:all .15s; letter-spacing:0.03em; }
+.stop-btn:active { background:var(--danger); color:#fff; }
+
+.action-row { margin-bottom:0.15rem; }
+#start-run-btn { width:100%; padding:1.05rem; background:var(--moss); border:none; border-radius:8px; color:#fff; font-family:'Jost',sans-serif; font-size:1.05rem; font-weight:600; letter-spacing:0.04em; cursor:pointer; transition:background .15s,transform .1s,opacity .15s; }
+#start-run-btn:active { background:var(--moss-dim); transform:scale(0.98); }
+#start-run-btn:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
+.break-row { display:flex; gap:0; margin-bottom:0.45rem; }
+.break-whisper { flex:1; display:block; text-align:center; background:none; border:none; color:var(--muted); font-family:'Space Mono',monospace; font-size:0.62rem; letter-spacing:0.1em; cursor:pointer; padding:0.45rem; transition:color .2s; text-transform:lowercase; }
+.break-whisper:hover { color:var(--ochre); }
+.break-whisper.lunch-w:hover { color:var(--rust); }
+.break-divider { width:1px; background:var(--border); margin:0.3rem 0; }
+
+.log-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:0.65rem; margin-top:0.3rem; }
+.log-head-label { font-family:'Space Mono',monospace; font-size:0.58rem; letter-spacing:0.22em; color:var(--muted); text-transform:uppercase; }
+#clear-btn { background:none; border:none; color:var(--border2); font-family:'Space Mono',monospace; font-size:0.56rem; letter-spacing:0.1em; text-transform:uppercase; cursor:pointer; padding:0; transition:color .2s; }
+#clear-btn:hover { color:var(--danger); }
+
+@keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+.run-log-card { background:var(--surface); border:1px solid var(--border); border-left:3px solid var(--border2); border-radius:9px; margin-bottom:0.5rem; overflow:hidden; animation:fadeUp .22s ease; }
+.run-log-card.active-run { border-left-color:var(--moss); }
+.rlc-head { background:var(--surface2); padding:0.55rem 0.9rem; border-bottom:1px solid var(--border); display:flex; flex-direction:column; gap:0.2rem; }
+.rlc-head-top { display:flex; align-items:flex-start; justify-content:space-between; gap:0.75rem; }
+.rlc-zone { font-family:'Jost',sans-serif; font-size:1rem; font-weight:600; color:var(--text); flex:1; }
+.rlc-run-actions { display:flex; align-items:center; gap:0.35rem; flex-shrink:0; }
+.rlc-edit, .rlc-del { background:none; border:1px solid var(--border2); border-radius:4px; color:var(--muted); font-family:'Space Mono',monospace; font-size:0.56rem; letter-spacing:0.06em; text-transform:uppercase; cursor:pointer; padding:0.2rem 0.4rem; transition:all .15s; }
+.rlc-edit:hover { border-color:var(--moss); color:var(--moss); }
+.rlc-del:hover { border-color:var(--danger); color:var(--danger); }
+.rlc-meta { display:flex; align-items:center; gap:0.55rem; flex-wrap:wrap; }
+.rlc-time { font-family:'Space Mono',monospace; font-size:0.66rem; color:var(--muted); }
+.rlc-dur { font-family:'Space Mono',monospace; font-size:0.62rem; color:var(--ochre-dim); background:var(--ochre-glow); border:1px solid var(--ochre-dim); border-radius:3px; padding:0.06rem 0.38rem; }
+.rlc-live { color:var(--moss); font-size:0.55rem; animation:pulse-live 1.4s infinite; }
+@keyframes pulse-live { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.rlc-body { padding:0.55rem 0.9rem; }
+.rlc-prem-row { display:flex; align-items:baseline; gap:0.42rem; margin-bottom:0.45rem; padding-bottom:0.4rem; border-bottom:1px solid var(--border); flex-wrap:wrap; }
+.rlc-prem-n { font-family:'Space Mono',monospace; font-weight:700; font-size:1.2rem; color:var(--text); line-height:1; }
+.rlc-prem-l { font-family:'Space Mono',monospace; font-size:0.52rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.1em; }
+.rlc-prem-sep { font-family:'Space Mono',monospace; font-size:0.62rem; color:var(--border2); }
+.rlc-prem-m { font-family:'Space Mono',monospace; font-weight:700; font-size:0.9rem; color:var(--text); line-height:1; }
+.rlc-prem-m.insp { color:var(--danger); }
+.rlc-chips { display:flex; flex-wrap:wrap; gap:0.3rem; margin-bottom:0.4rem; }
+.rlc-chip { font-family:'Space Mono',monospace; font-size:0.62rem; background:var(--surface2); border:1px solid var(--border); border-radius:3px; padding:0.14rem 0.45rem; display:flex; align-items:center; gap:0.25rem; color:var(--muted); }
+.rlc-chip b { color:var(--text); font-weight:700; }
+.rlc-chip.c-insp b { color:var(--danger); }
+.rlc-chip.c-cont b { color:var(--moss); }
+.rlc-specials { margin-top:0.35rem; border-top:1px solid var(--border); padding-top:0.35rem; }
+.rlc-sp-row { display:flex; align-items:center; gap:0.5rem; padding:0.2rem 0; font-size:0.78rem; }
+.rlc-sp-num { font-family:'Space Mono',monospace; font-weight:700; color:var(--text); min-width:48px; }
+.rlc-sp-res { flex:1; color:var(--ochre-dim); font-family:'Jost',sans-serif; font-size:0.78rem; }
+.rlc-sp-t { font-family:'Space Mono',monospace; font-size:0.6rem; color:var(--muted); }
+
+.break-card { background:var(--surface); border:1px solid var(--border); border-radius:9px; padding:0.6rem 0.9rem; margin-bottom:0.5rem; display:flex; align-items:flex-start; gap:0.65rem; animation:fadeUp .22s ease; }
+.bc-pip { width:8px; height:8px; border-radius:50%; margin-top:0.3rem; flex-shrink:0; }
+.bc-pip.appt { background:var(--ochre); }
+.bc-pip.lunch { background:var(--rust); }
+.bc-pip.team { background:var(--info); }
+.bc-time { font-family:'Space Mono',monospace; font-size:0.66rem; color:var(--muted); min-width:46px; margin-top:0.04rem; }
+.bc-body { flex:1; min-width:0; }
+.bc-type { font-family:'Space Mono',monospace; font-size:0.54rem; letter-spacing:0.16em; color:var(--muted); text-transform:uppercase; margin-bottom:0.12rem; }
+.bc-main { font-family:'Jost',sans-serif; font-size:0.9rem; font-weight:500; color:var(--text); }
+.bc-sub { font-family:'Space Mono',monospace; font-size:0.65rem; color:var(--muted); margin-top:0.1rem; }
+#log-empty { text-align:center; padding:2.5rem 0; color:var(--muted); font-style:italic; font-family:'Jost',sans-serif; font-size:1rem; }
+
+#totals-bar { display:none; position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:480px; background:linear-gradient(to top, var(--surface) 72%, transparent); border-top:2px solid var(--ochre); padding:0.65rem 1.25rem 1.3rem; z-index:80; }
+#totals-bar.show { display:block; }
+.totals-lbl { font-family:'Space Mono',monospace; font-size:0.55rem; letter-spacing:0.2em; color:var(--muted); text-transform:uppercase; margin-bottom:0.45rem; }
+.totals-chips { display:flex; flex-wrap:wrap; gap:0.3rem; }
+.tot-chip { background:var(--surface2); border:1px solid var(--border2); border-radius:4px; padding:0.22rem 0.55rem; font-family:'Space Mono',monospace; font-size:0.7rem; display:flex; align-items:center; gap:0.3rem; }
+.tot-n { font-weight:700; color:var(--text); }
+.tot-l { color:var(--muted); }
+.tot-chip.c-insp .tot-n { color:var(--danger); }
+.tot-chip.c-cont .tot-n { color:var(--moss); }
+.tot-chip.c-prem { border-color:var(--moss); background:var(--moss-light); }
+.tot-chip.c-prem .tot-n { color:var(--moss); }
+
+/* MODALS — C editorial */
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(20,16,8,0.7); z-index:200; align-items:flex-end; justify-content:center; backdrop-filter:blur(3px); }
+.modal-overlay.open { display:flex; }
+@keyframes sheetUp { from { transform:translateY(32px); opacity:0; } to { transform:translateY(0); opacity:1; } }
+.modal-sheet { background:var(--surface); border-top:3px solid var(--moss); border-radius:14px 14px 0 0; width:100%; max-width:480px; max-height:90vh; overflow-y:auto; animation:sheetUp .22s ease; box-shadow:0 -8px 44px rgba(20,16,8,0.4); touch-action:pan-y; will-change:transform; }
+.sheet-handle { width:34px; height:3px; background:var(--border2); border-radius:2px; margin:0.75rem auto 0; cursor:grab; }
+.sheet-head { padding:0.85rem 1.25rem 0.8rem; border-bottom:1px solid var(--border); display:flex; flex-direction:column; gap:0.2rem; }
+.sheet-eyebrow { font-family:'Space Mono',monospace; font-size:0.55rem; letter-spacing:0.24em; color:var(--ochre-dim); text-transform:uppercase; }
+.sheet-title { font-family:'Jost',sans-serif; font-size:1.35rem; font-weight:600; color:var(--text); letter-spacing:-0.01em; }
+.sheet-body { padding:1.05rem 1.25rem; }
+.sheet-foot { padding:0.75rem 1.25rem 1.75rem; border-top:1px solid var(--border); display:flex; gap:0.5rem; }
+.sheet-primary { flex:1; padding:1rem; background:var(--moss); border:none; border-radius:7px; color:#fff; font-family:'Jost',sans-serif; font-size:1.05rem; font-weight:600; cursor:pointer; transition:background .15s; letter-spacing:0.03em; }
+.sheet-primary:active { background:var(--moss-dim); }
+.sheet-primary:disabled { opacity:0.32; cursor:not-allowed; }
+.sheet-cancel { padding:1rem 1.1rem; background:transparent; border:1px solid var(--border2); border-radius:7px; color:var(--muted); font-family:'Space Mono',monospace; font-size:0.75rem; cursor:pointer; transition:all .15s; letter-spacing:0.06em; }
+.sheet-cancel:hover { border-color:var(--danger); color:var(--danger); }
+
+.form-group { margin-bottom:0.95rem; }
+.form-label { font-family:'Space Mono',monospace; font-size:0.56rem; letter-spacing:0.18em; color:var(--muted); text-transform:uppercase; margin-bottom:0.45rem; display:block; }
+.form-input { width:100%; background:var(--surface2); border:1px solid var(--border2); border-radius:6px; color:var(--text); font-family:'Jost',sans-serif; font-size:0.95rem; padding:0.64rem 0.85rem; outline:none; transition:border-color .15s; -webkit-appearance:none; }
+.form-input:focus { border-color:var(--moss); }
+.form-input::placeholder { color:var(--muted); }
+
+.edit-run-body { display:grid; gap:0.75rem; }
+.edit-card { background:var(--surface2); border:1px solid var(--border); border-left:3px solid var(--moss); border-radius:8px; padding:0.8rem; }
+.edit-card .form-group:last-child { margin-bottom:0; }
+.edit-card-head { display:flex; align-items:baseline; justify-content:space-between; gap:0.5rem; margin-bottom:0.6rem; padding-bottom:0.5rem; border-bottom:1px solid var(--border); }
+.edit-card-title { font-family:'Space Mono',monospace; font-size:0.56rem; letter-spacing:0.18em; color:var(--ochre-dim); text-transform:uppercase; }
+.edit-card-note { font-family:'Jost',sans-serif; font-style:italic; font-size:0.82rem; color:var(--muted); }
+.edit-grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:0.55rem; }
+.edit-grid-2.compact .form-group { margin-bottom:0; }
+.edit-tally-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.45rem; }
+.edit-tally-chip { background:var(--surface); border:1px solid var(--border); border-radius:7px; padding:0.45rem 0.5rem; }
+.edit-tally-chip .form-label { margin-bottom:0.28rem; font-size:0.5rem; letter-spacing:0.14em; }
+.edit-tally-chip .form-input { padding:0.48rem 0.65rem; font-size:0.92rem; }
+.edit-zone-stack, .edit-specials-stack { display:grid; gap:0.45rem; }
+.edit-zone-row { display:grid; grid-template-columns:1fr auto; gap:0.45rem; align-items:start; background:var(--surface); border:1px solid var(--border); border-radius:7px; padding:0.55rem 0.6rem; }
+.edit-zone-main { min-width:0; }
+.edit-zone-main .form-input { margin-bottom:0.35rem; }
+.edit-special-row { display:grid; grid-template-columns:76px 1fr 118px auto; gap:0.35rem; align-items:end; background:var(--surface); border:1px solid var(--border); border-radius:7px; padding:0.45rem 0.5rem; }
+.edit-empty { font-size:0.82rem; color:var(--muted); font-style:italic; font-family:'Jost',sans-serif; padding:0.1rem 0.15rem; }
+.edit-run-body .add-zone-btn { margin-top:0.1rem; }
+
+.dial-wrap { width:100%; margin-bottom:0.5rem; }
+.dial-chrome { position:relative; height:132px; overflow:hidden; border:1px solid var(--border2); border-radius:7px; background:var(--surface2); cursor:ns-resize; }
+.dial-scroll { height:132px; overflow-y:scroll; scroll-snap-type:y mandatory; -webkit-overflow-scrolling:touch; scrollbar-width:none; position:relative; z-index:1; }
+.dial-scroll::-webkit-scrollbar { display:none; }
+.dial-pad { height:44px; flex-shrink:0; display:block; }
+.dial-item { height:44px; scroll-snap-align:center; display:flex; align-items:center; justify-content:center; font-family:'Space Mono',monospace; font-size:1rem; color:var(--muted); user-select:none; }
+.dial-item.sel { color:var(--text); font-weight:700; }
+.dial-hl-top { position:absolute; top:44px; left:0; right:0; height:1px; background:var(--moss); pointer-events:none; z-index:3; }
+.dial-hl-bot { position:absolute; top:87px; left:0; right:0; height:1px; background:var(--moss); pointer-events:none; z-index:3; }
+.dial-fade-t { position:absolute; top:0; left:0; right:0; height:50px; background:linear-gradient(to bottom, var(--surface2) 0%, transparent 100%); pointer-events:none; z-index:2; }
+.dial-fade-b { position:absolute; bottom:0; left:0; right:0; height:50px; background:linear-gradient(to top, var(--surface2) 0%, transparent 100%); pointer-events:none; z-index:2; }
+.dial-custom { width:100%; margin-top:0.35rem; background:transparent; border:none; border-bottom:1px solid var(--border2); color:var(--muted); font-family:'Space Mono',monospace; font-size:0.78rem; padding:0.22rem 0.35rem; outline:none; text-align:center; transition:border-color .15s; -webkit-appearance:none; }
+.dial-custom::placeholder { color:var(--border2); font-size:0.72rem; }
+.dial-custom:focus { border-color:var(--ochre); color:var(--text); }
+
+.zone-pair { display:flex; gap:0.5rem; margin-bottom:0.65rem; align-items:flex-start; }
+.zone-pair .form-input { margin-bottom:0.35rem; }
+.zone-rm { background:none; border:none; color:var(--muted); font-size:1rem; cursor:pointer; padding:0.6rem 0.35rem; transition:color .15s; flex-shrink:0; margin-top:0.02rem; }
+.zone-rm:hover { color:var(--danger); }
+.add-zone-btn { background:none; border:1px dashed var(--moss-dim); border-radius:6px; color:var(--moss); font-family:'Space Mono',monospace; font-size:0.72rem; letter-spacing:0.08em; padding:0.55rem 1rem; cursor:pointer; width:100%; transition:all .15s; margin-top:0.1rem; text-transform:uppercase; }
+.add-zone-btn:hover { border-color:var(--moss); background:var(--moss-light); }
+
+.member-manage-row { display:flex; align-items:center; justify-content:space-between; padding:0.4rem 0; border-bottom:1px solid var(--border); }
+.member-manage-row:last-child { border-bottom:none; }
+.mmr-name { font-family:'Jost',sans-serif; font-size:0.9rem; color:var(--text); }
+.mmr-rm { background:none; border:none; color:var(--border2); font-family:'Space Mono',monospace; font-size:0.65rem; cursor:pointer; padding:0.2rem 0.4rem; transition:color .15s; text-transform:uppercase; }
+.mmr-rm:hover { color:var(--danger); }
+
+.lunch-dur-display { text-align:center; padding:0.45rem; font-family:'Space Mono',monospace; font-size:1rem; color:var(--ochre-dim); background:var(--ochre-glow); border-radius:5px; margin-top:0.35rem; min-height:2.2rem; letter-spacing:0.06em; }
+
+#missed-note { background:var(--surface2); border:1px solid var(--border); border-left:3px solid var(--ochre); border-radius:7px; padding:0.8rem 1rem; margin-bottom:1rem; font-family:'Jost',sans-serif; font-size:0.86rem; color:var(--muted); line-height:1.55; }
+
+.danger-box { background:rgba(192,72,28,0.08); border:1px solid var(--danger); border-radius:7px; padding:0.85rem 1rem; font-family:'Jost',sans-serif; font-size:0.88rem; color:var(--text); line-height:1.55; margin-bottom:0.85rem; }
+.danger-box strong { color:var(--danger); }
+.clear-step { display:none; }
+.clear-step.show { display:block; }
+.clear-confirm-btn { width:100%; padding:0.9rem; background:var(--danger); border:none; border-radius:7px; color:#fff; font-family:'Jost',sans-serif; font-size:1rem; font-weight:600; cursor:pointer; margin-bottom:0.5rem; transition:opacity .15s; }
+.clear-confirm-btn:hover { opacity:0.88; }
+.clear-back-btn { width:100%; padding:0.9rem; background:none; border:1px solid var(--border2); border-radius:7px; color:var(--muted); font-family:'Jost',sans-serif; font-size:0.9rem; cursor:pointer; transition:all .15s; }
+.clear-back-btn:hover { border-color:var(--moss); color:var(--moss); }
+.step1-reveal { width:100%; padding:0.9rem; background:var(--surface2); border:1px solid var(--border2); border-radius:7px; color:var(--muted); font-family:'Jost',sans-serif; font-size:0.85rem; cursor:pointer; margin-bottom:0.5rem; transition:all .15s; text-align:center; }
+.step1-reveal:hover { border-color:var(--danger); color:var(--danger); }
+
+#back-guard { display:none; position:fixed; inset:0; background:rgba(20,16,8,0.88); z-index:400; align-items:center; justify-content:center; padding:2rem; }
+#back-guard.show { display:flex; }
+.bg-box { background:var(--surface); border:1px solid var(--border); border-left:4px solid var(--rust); border-radius:12px; padding:1.75rem 1.5rem; max-width:340px; width:100%; }
+@keyframes bgUp { from{transform:translateY(16px);opacity:0} to{transform:translateY(0);opacity:1} }
+#back-guard.show .bg-box { animation:bgUp .2s ease; }
+.bg-title { font-family:'Jost',sans-serif; font-size:1.2rem; font-weight:700; color:var(--rust); margin-bottom:0.55rem; letter-spacing:0.01em; }
+.bg-body { font-family:'Jost',sans-serif; font-size:0.88rem; color:var(--muted); line-height:1.55; margin-bottom:1.25rem; }
+.bg-body em { color:var(--text); font-style:normal; font-weight:600; }
+.bg-actions { display:flex; gap:0.6rem; }
+.bg-stay { flex:1; padding:0.85rem; background:var(--moss); border:none; border-radius:8px; color:#fff; font-family:'Jost',sans-serif; font-size:1rem; font-weight:600; letter-spacing:0.03em; cursor:pointer; }
+.bg-leave { padding:0.85rem 1rem; background:transparent; border:1px solid var(--border2); border-radius:8px; color:var(--muted); font-family:'Space Mono',monospace; font-size:0.75rem; cursor:pointer; transition:all .15s; }
+.bg-leave:hover { border-color:var(--danger); color:var(--danger); }
+
+</style>
+</head>
+<body>
+
+<header>
+  <svg class="hdr-burst" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g stroke="#f6efdd" stroke-width="1.6" stroke-linecap="round"><line x1="50" y1="50" x2="93" y2="50"/><line x1="50" y1="50" x2="50" y2="7"/><line x1="50" y1="50" x2="84" y2="22"/><line x1="50" y1="50" x2="22" y2="16"/><line x1="50" y1="50" x2="88" y2="74"/><line x1="50" y1="50" x2="70" y2="13"/><line x1="50" y1="50" x2="93" y2="38"/><line x1="50" y1="50" x2="78" y2="61"/></g></svg>
+  <div class="header-row">
+    <div class="header-logo">
+      <svg class="logo-mark" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g stroke="#e6b232" stroke-width="1.8" stroke-linecap="round"><line x1="20" y1="20" x2="37" y2="20"/><line x1="20" y1="20" x2="28.5" y2="34.7"/><line x1="20" y1="20" x2="11.5" y2="34.7"/><line x1="20" y1="20" x2="3" y2="20"/><line x1="20" y1="20" x2="11.5" y2="5.3"/><line x1="20" y1="20" x2="28.5" y2="5.3"/></g><g stroke="#f6efdd" stroke-width="1.4" stroke-linecap="round"><line x1="20" y1="20" x2="29.5" y2="25.5"/><line x1="20" y1="20" x2="20" y2="30.5"/><line x1="20" y1="20" x2="10.5" y2="25.5"/><line x1="20" y1="20" x2="10.5" y2="14.5"/><line x1="20" y1="20" x2="20" y2="9.5"/><line x1="20" y1="20" x2="29.5" y2="14.5"/></g><circle cx="20" cy="20" r="2.5" fill="#e6b232"/></svg>
+      <span class="logo-b">Block</span><span class="logo-sep">/</span><span class="logo-d">Doc</span>
+      <span class="logo-v">v2.0</span>
+    </div>
+    <div class="header-right">
+      <span id="header-date"></span>
+      <button id="theme-btn" onclick="toggleTheme()">☀ Light</button>
+    </div>
+  </div>
+  <div class="header-meta">
+    <span class="hdr-tag">Field Log</span>
+    <div class="hdr-dotline"></div>
+  </div>
+  <div class="header-rule">
+    <div class="hr-thick"></div>
+    <div class="hr-thin"></div>
+  </div>
+</header>
+
+<div class="content">
+
+  <!-- ── SETUP ── -->
+  <div id="screen-setup">
+    <div style="height:1rem"></div>
+    <div class="setup-card">
+      <div class="setup-head">
+        <div class="setup-eyebrow">New Day</div>
+        <div class="setup-title">Who's on the team today?</div>
+      </div>
+      <div class="setup-body">
+        <div class="setup-date" id="setup-date"></div>
+        <span class="stamp-label">Select Team</span>
+        <div class="chip-row" id="setup-chips"></div>
+
+        <div class="sec-rule"><span class="sec-rule-g">✦</span></div>
+
+        <div class="setup-appts">
+          <span class="stamp-label">Appointments Today</span>
+          <div id="setup-appt-list"><div class="setup-appt-empty">None scheduled</div></div>
+          <div class="setup-appt-inline" id="setup-appt-inline">
+            <div class="sai-row">
+              <input type="time" id="sap-time" autocomplete="off">
+              <input type="text" id="sap-addr" placeholder="Address (optional)" autocomplete="off">
+            </div>
+            <div class="sai-btns">
+              <button class="sai-add-btn" onclick="confirmSetupAppt()">Add</button>
+              <button class="sai-cancel-btn" onclick="hideSetupApptAdd()">Cancel</button>
+            </div>
+          </div>
+          <button class="setup-appt-add-link" id="setup-appt-toggle" onclick="showSetupApptAdd()">+ add appointment</button>
+        </div>
+
+        <div class="sec-rule"><span class="sec-rule-g">✦</span></div>
+        <button class="primary-btn" id="begin-btn" onclick="startDay()" disabled>Begin Day Log</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MAIN ── -->
+  <div id="screen-main">
+
+    <div id="team-bar">
+      <div class="team-left">
+        <span class="team-label">Team</span>
+        <span id="team-names"></span>
+      </div>
+      <button class="icon-btn" onclick="openTeamModal()">✎ edit</button>
+    </div>
+
+    <!-- Active Run Card -->
+    <div id="run-card">
+      <div class="run-card-head">
+        <div class="rch-top">
+          <div class="run-head-left">
+            <div class="run-eyebrow">Active Run</div>
+            <div id="run-zone-display"></div>
+          </div>
+          <div class="rch-right">
+            <div id="run-timer">0:00</div>
+            <button class="add-street-trigger" onclick="toggleAddStreet()">+ Block / Street</button>
+          </div>
+        </div>
+        <div class="add-street-inline hidden" id="add-street-inline">
+          <div class="asi-label">Add Block / Street to Run</div>
+          <input type="text" class="asi-street" id="asi-street-name" placeholder="Street name (leave blank to use current)…" autocomplete="off" autocorrect="off" spellcheck="false">
+          <div class="dial-wrap">
+            <div class="dial-chrome">
+              <div class="dial-hl-top"></div>
+              <div class="dial-hl-bot"></div>
+              <div class="dial-fade-t"></div>
+              <div class="dial-fade-b"></div>
+              <div class="dial-scroll" id="asi-dial" onscroll="onAsiDial()"></div>
+            </div>
+            <input class="dial-custom" id="asi-dial-custom" placeholder="or type custom block range…" oninput="onAsiCustom()">
+          </div>
+          <div class="asi-btns">
+            <button class="asi-add" onclick="confirmAddStreet()">Add to Run</button>
+            <button class="asi-cancel" onclick="toggleAddStreet()">Cancel</button>
+          </div>
+        </div>
+      </div>
+      <div class="run-card-body">
+
+        <!-- v4: tick controls, no edit button, no net premises -->
+        <div class="premises-row">
+          <span class="prem-label">Premises</span>
+          <div class="prem-tick">
+            <button class="p-dec" onclick="adjPremises(-1)">−</button>
+            <span class="prem-val" id="run-premises-count"><span class="unset">—</span></span>
+            <button class="p-inc" onclick="adjPremises(1)">+</button>
+          </div>
+        </div>
+
+        <div class="prem-meta-row">
+          <div class="prem-meta-chip contact">
+            <span class="prem-meta-lbl">Contacts</span>
+            <span class="prem-meta-val" id="run-contacts-count">0</span>
+          </div>
+          <div class="prem-meta-chip inspect">
+            <span class="prem-meta-lbl">Inspection</span>
+            <span class="prem-meta-val" id="run-inspection-count">0</span>
+          </div>
+        </div>
+
+        <div class="section-hdr">Fast Tally</div>
+        <div class="fast-tally">
+          <div class="tally-cell t-inspect">
+            <span class="tally-lbl">Inspection</span>
+            <span class="tally-num" id="tc-inspection">0</span>
+            <div class="tally-ctrl">
+              <button class="t-dec" onclick="adjTally('inspection',-1)">−</button>
+              <button class="t-inc" onclick="adjTally('inspection',1)">+</button>
+            </div>
+          </div>
+          <div class="tally-cell t-handed">
+            <span class="tally-lbl">Handed</span>
+            <span class="tally-num" id="tc-ss">0</span>
+            <div class="tally-ctrl">
+              <button class="t-dec" onclick="adjTally('ss',-1)">−</button>
+              <button class="t-inc" onclick="adjTally('ss',1)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-hdr">Outcomes</div>
+        <div class="outcomes-grid">
+          <div class="out-cell">
+            <span class="out-lbl">Refused</span>
+            <span class="out-num" id="tc-refused">0</span>
+            <div class="out-ctrl">
+              <button class="o-dec" onclick="adjTally('refused',-1)">−</button>
+              <button class="o-inc" onclick="adjTally('refused',1)">+</button>
+            </div>
+          </div>
+          <div class="out-cell">
+            <span class="out-lbl">Vacant Lot</span>
+            <span class="out-num" id="tc-vacantLot">0</span>
+            <div class="out-ctrl">
+              <button class="o-dec" onclick="adjTally('vacantLot',-1)">−</button>
+              <button class="o-inc" onclick="adjTally('vacantLot',1)">+</button>
+            </div>
+          </div>
+          <div class="out-cell">
+            <span class="out-lbl">Vacant Prem.</span>
+            <span class="out-num" id="tc-vacantPremises">0</span>
+            <div class="out-ctrl">
+              <button class="o-dec" onclick="adjTally('vacantPremises',-1)">−</button>
+              <button class="o-inc" onclick="adjTally('vacantPremises',1)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="special-zone">
+          <div class="section-hdr special-hdr">Special Entries</div>
+          <div class="special-addr-row">
+            <input id="house-input" type="text" placeholder="No." inputmode="numeric"
+              autocomplete="off" autocorrect="off" spellcheck="false" oninput="onHouseInput()">
+            <div id="street-ctx">—</div>
+          </div>
+          <div class="spec-grid">
+            <button class="spec-btn" onclick="submitSpecial('MapCall Elim')" id="rb-mapcall" disabled>MapCall Elim</button>
+            <button class="spec-btn" onclick="submitSpecial('New Construction')" id="rb-newconstr" disabled>New Construction</button>
+          </div>
+        </div>
+
+        <div class="derived-row">
+          <span class="derived-lbl">Door Hangers</span>
+          <span class="derived-val" id="derived-hangers">—</span>
+          <span class="derived-tag">auto</span>
+        </div>
+
+      </div>
+      <div class="run-card-foot">
+        <button class="missed-btn" onclick="openMissedModal()">⏱ Missed Time</button>
+        <button class="stop-btn" onclick="stopRun()">Stop Run</button>
+      </div>
+    </div>
+
+    <div class="action-row">
+      <button id="start-run-btn" onclick="openRunModal()">▶ Start Run</button>
+    </div>
+    <div class="break-row">
+      <button class="break-whisper" onclick="openApptModal()">· appointment ·</button>
+      <div class="break-divider"></div>
+      <button class="break-whisper lunch-w" onclick="openLunchModal()">· lunch break ·</button>
+    </div>
+
+    <div class="log-head">
+      <div class="log-head-label">Day Log</div>
+      <button id="clear-btn" onclick="openClearModal()">Clear Day</button>
+    </div>
+    <div id="log-list"><div id="log-empty">No entries yet</div></div>
+
+  </div>
+</div>
+
+<!-- Totals Bar -->
+<div id="totals-bar">
+  <div class="totals-lbl">Running Totals</div>
+  <div class="totals-chips" id="totals-chips"></div>
+</div>
+
+<!-- Start Run Modal -->
+<div id="modal-run" class="modal-overlay">
+  <div class="modal-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <div class="sheet-eyebrow">New Run</div>
+      <div class="sheet-title">Coverage Zone</div>
+    </div>
+    <div class="sheet-body">
+      <div class="form-group">
+        <span class="form-label">Streets &amp; Blocks</span>
+        <div id="zone-pairs-container"></div>
+        <button class="add-zone-btn" onclick="addZonePair()">+ Add Another Street</button>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="run-start-time">Start Time</label>
+        <input type="time" class="form-input" id="run-start-time" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="run-premises-input">Premises Count</label>
+        <input type="number" class="form-input" id="run-premises-input" inputmode="numeric" min="0" placeholder="How many premises?">
+      </div>
+    </div>
+    <div class="sheet-foot">
+      <button class="sheet-cancel" onclick="closeModal('modal-run')">Cancel</button>
+      <button class="sheet-primary" onclick="confirmStartRun()">Start Run</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Run Modal -->
+<div id="modal-edit-run" class="modal-overlay">
+  <div class="modal-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <div class="sheet-eyebrow">Edit Run</div>
+      <div class="sheet-title">Run Details</div>
+    </div>
+    <div class="sheet-body edit-run-body">
+      <div class="edit-card">
+        <div class="edit-card-head">
+          <div class="edit-card-title">Coverage Zone</div>
+          <div class="edit-card-note">same skeleton, less clutter</div>
+        </div>
+        <div id="edit-zone-pairs-container" class="edit-zone-stack"></div>
+        <button class="add-zone-btn" onclick="addEditZonePair()">+ Add Another Street</button>
+      </div>
+
+      <div class="edit-card">
+        <div class="edit-card-head">
+          <div class="edit-card-title">Timing &amp; Premises</div>
+        </div>
+        <div class="edit-grid-2 compact">
+          <div class="form-group">
+            <label class="form-label" for="edit-run-start-time">Start Time</label>
+            <input type="time" class="form-input" id="edit-run-start-time" autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="edit-run-stop-time">Stop Time</label>
+            <input type="time" class="form-input" id="edit-run-stop-time" autocomplete="off" placeholder="Leave blank if active">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="edit-run-premises-count">Initial Premises</label>
+            <input type="number" class="form-input" id="edit-run-premises-count" inputmode="numeric" min="0" placeholder="Optional">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="edit-run-premises-final">Final Premises</label>
+            <input type="number" class="form-input" id="edit-run-premises-final" inputmode="numeric" min="0" placeholder="Optional">
+          </div>
+        </div>
+      </div>
+
+      <div class="edit-card">
+        <div class="edit-card-head">
+          <div class="edit-card-title">Tallies</div>
+        </div>
+        <div class="edit-tally-grid">
+          <div class="edit-tally-chip"><label class="form-label" for="edit-tally-inspection">Inspection</label><input type="number" class="form-input" id="edit-tally-inspection" min="0"></div>
+          <div class="edit-tally-chip"><label class="form-label" for="edit-tally-refused">Refused</label><input type="number" class="form-input" id="edit-tally-refused" min="0"></div>
+          <div class="edit-tally-chip"><label class="form-label" for="edit-tally-ss">Handed</label><input type="number" class="form-input" id="edit-tally-ss" min="0"></div>
+          <div class="edit-tally-chip"><label class="form-label" for="edit-tally-vacantLot">Vacant Lot</label><input type="number" class="form-input" id="edit-tally-vacantLot" min="0"></div>
+          <div class="edit-tally-chip"><label class="form-label" for="edit-tally-vacantPremises">Vacant Premises</label><input type="number" class="form-input" id="edit-tally-vacantPremises" min="0"></div>
+          <div class="edit-tally-chip"><label class="form-label" for="edit-tally-mapCallElim">MapCall Elim</label><input type="number" class="form-input" id="edit-tally-mapCallElim" min="0"></div>
+          <div class="edit-tally-chip"><label class="form-label" for="edit-tally-newConstruction">New Construction</label><input type="number" class="form-input" id="edit-tally-newConstruction" min="0"></div>
+        </div>
+      </div>
+
+      <div class="edit-card">
+        <div class="edit-card-head">
+          <div class="edit-card-title">Special Addresses</div>
+        </div>
+        <div id="edit-specials-list" class="edit-specials-stack"></div>
+        <button class="add-zone-btn" onclick="addEditSpecial()">+ Add Special Address</button>
+      </div>
+    </div>
+    <div class="sheet-foot">
+      <button class="sheet-cancel" onclick="closeModal('modal-edit-run')">Cancel</button>
+      <button class="sheet-primary" onclick="saveEditedRun()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Stop Run Modal -->
+<div id="modal-stop" class="modal-overlay">
+  <div class="modal-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <div class="sheet-eyebrow">Close Run</div>
+      <div class="sheet-title" id="stop-modal-title">End this run?</div>
+    </div>
+    <div class="sheet-body">
+      <div class="form-group">
+        <label class="form-label" for="run-stop-time">Stop Time</label>
+        <input type="time" class="form-input" id="run-stop-time" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="stop-premises-input">Final Premises Count</label>
+        <input type="number" class="form-input" id="stop-premises-input" inputmode="numeric" min="0" placeholder="Adjust if needed">
+      </div>
+      <div id="stop-summary" style="font-family:'Space Mono',monospace;font-size:0.78rem;color:var(--muted);line-height:1.9;"></div>
+    </div>
+    <div class="sheet-foot">
+      <button class="sheet-cancel" onclick="closeModal('modal-stop')">Back</button>
+      <button class="sheet-primary" style="background:var(--danger)" onclick="confirmStopRun()">Close Run</button>
+    </div>
+  </div>
+</div>
+
+<!-- Appointment Modal -->
+<div id="modal-appt" class="modal-overlay">
+  <div class="modal-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <div class="sheet-eyebrow">Break</div>
+      <div class="sheet-title">Appointment</div>
+    </div>
+    <div class="sheet-body">
+      <div class="form-group">
+        <label class="form-label" for="appt-time">Time</label>
+        <input type="time" class="form-input" id="appt-time" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="appt-addr">Address (optional)</label>
+        <input type="text" class="form-input" id="appt-addr" placeholder="123 Oak St" autocomplete="off">
+      </div>
+    </div>
+    <div class="sheet-foot">
+      <button class="sheet-cancel" onclick="closeModal('modal-appt')">Cancel</button>
+      <button class="sheet-primary" style="background:var(--ochre);color:var(--block-bg)" onclick="confirmAppt()">Log Appointment</button>
+    </div>
+  </div>
+</div>
+
+<!-- Lunch / Break Modal -->
+<div id="modal-lunch" class="modal-overlay">
+  <div class="modal-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <div class="sheet-eyebrow">Break</div>
+      <div class="sheet-title">Lunch Break</div>
+    </div>
+    <div class="sheet-body">
+      <div class="form-group">
+        <label class="form-label" for="lunch-label">Label</label>
+        <input type="text" class="form-input" id="lunch-label" value="Lunch" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="lunch-start">Start Time</label>
+        <input type="time" class="form-input" id="lunch-start" autocomplete="off" oninput="updateLunchDur()">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="lunch-stop">End Time</label>
+        <input type="time" class="form-input" id="lunch-stop" autocomplete="off" oninput="updateLunchDur()">
+      </div>
+      <div class="lunch-dur-display" id="lunch-dur-display">—</div>
+    </div>
+    <div class="sheet-foot">
+      <button class="sheet-cancel" onclick="closeModal('modal-lunch')">Cancel</button>
+      <button class="sheet-primary" style="background:var(--rust)" onclick="confirmLunch()">Log Break</button>
+    </div>
+  </div>
+</div>
+
+<!-- Team Modal -->
+<div id="modal-team" class="modal-overlay">
+  <div class="modal-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <div class="sheet-eyebrow">Team Comp</div>
+      <div class="sheet-title">Who's here now?</div>
+    </div>
+    <div class="sheet-body">
+      <span class="form-label">Active Team</span>
+      <div class="chip-row" id="team-modal-chips" style="margin-bottom:1rem;"></div>
+      <div class="sec-rule"><span class="sec-rule-g">✦</span></div>
+      <span class="form-label" style="display:block;margin-top:0.75rem;margin-bottom:0.4rem;">Known Members</span>
+      <div id="known-list" style="margin-bottom:0.85rem;"></div>
+      <div style="display:flex;gap:0.5rem;">
+        <input type="text" class="form-input" id="new-name-input" placeholder="Add name…" autocomplete="off" style="flex:1" onkeydown="if(event.key==='Enter')addKnownMember()">
+        <button style="padding:0.62rem 1rem;background:var(--moss);border:none;border-radius:6px;color:#fff;font-size:0.9rem;cursor:pointer;" onclick="addKnownMember()">Add</button>
+      </div>
+    </div>
+    <div class="sheet-foot">
+      <button class="sheet-cancel" onclick="closeModal('modal-team')">Cancel</button>
+      <button class="sheet-primary" onclick="saveTeam()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Missed Time Modal -->
+<div id="modal-missed" class="modal-overlay">
+  <div class="modal-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <div class="sheet-eyebrow">Correct Time</div>
+      <div class="sheet-title">Missed Start Time</div>
+    </div>
+    <div class="sheet-body">
+      <div id="missed-note"></div>
+      <div class="form-group">
+        <label class="form-label" for="missed-time-input">Corrected Start Time</label>
+        <input type="time" class="form-input" id="missed-time-input" autocomplete="off">
+      </div>
+    </div>
+    <div class="sheet-foot">
+      <button class="sheet-cancel" onclick="closeModal('modal-missed')">Cancel</button>
+      <button class="sheet-primary" onclick="saveMissedTime()">Apply</button>
+    </div>
+  </div>
+</div>
+
+<!-- Clear Modal -->
+<div id="modal-clear" class="modal-overlay">
+  <div class="modal-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <div class="sheet-eyebrow" style="color:var(--danger)">Destructive Action</div>
+      <div class="sheet-title">Clear Day Log</div>
+    </div>
+    <div class="sheet-body">
+      <div class="clear-step show" id="clear-s1">
+        <div class="danger-box">This will permanently erase all runs, addresses, and breaks logged today.<br><strong>There is no undo.</strong></div>
+        <button class="step1-reveal" onclick="showClearStep2()">I understand — show confirm</button>
+        <button class="clear-back-btn" onclick="closeModal('modal-clear')">Cancel, keep my data</button>
+      </div>
+      <div class="clear-step" id="clear-s2">
+        <div class="danger-box"><strong>Last chance.</strong> Everything logged today disappears permanently.</div>
+        <button class="clear-confirm-btn" onclick="confirmClear()">Yes — wipe the day</button>
+        <button class="clear-back-btn" onclick="closeModal('modal-clear');resetClear()">No, keep it</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Back Guard -->
+<div id="back-guard">
+  <div class="bg-box">
+    <div class="bg-title">Leave Block Doc?</div>
+    <div class="bg-body">Your day log is <em>saved locally</em> and will be waiting when you return. No data will be lost.</div>
+    <div class="bg-actions">
+      <button class="bg-stay" onclick="closeBackGuard()">Stay</button>
+      <button class="bg-leave" onclick="leaveConfirmed()">Leave anyway</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── STATE ──
+let isDark = localStorage.getItem('bd_theme') === 'dark'; // paint hint only; IndexedDB is the source of truth (loaded in boot())
+let knownMembers = ['AJ'];
+let day = null;
+let timerIv = null;
+let setupSel = [];
+let setupAppts = [];
+let teamEditSel = [];
+let zonePairs = [];
+let editZonePairs = [];
+let editingRunId = null;
+let editSpecials = [];
+let gpsStreet = '';
+let addStreetOpen = false;
+let asiBlockRange = '100s';
+let backGuardShowing = false;
+
+// ── DIAL ──
+const DIAL_VALS = [];
+for (let v = 100; v <= 4000; v += 100) DIAL_VALS.push(v + 's');
+const DIAL_H = 44;
+
+function buildDialItems(scrollEl) {
+  scrollEl.innerHTML =
+    `<div class="dial-pad"></div>` +
+    DIAL_VALS.map(v => `<div class="dial-item">${v}</div>`).join('') +
+    `<div class="dial-pad"></div>`;
+}
+function dialScrollTo(scrollEl, val) {
+  const idx = DIAL_VALS.indexOf(val);
+  if (idx >= 0) scrollEl.scrollTop = idx * DIAL_H;
+}
+function getDialVal(scrollEl) {
+  const idx = Math.max(0, Math.min(Math.round(scrollEl.scrollTop / DIAL_H), DIAL_VALS.length - 1));
+  return DIAL_VALS[idx];
+}
+function firstRunStreet() {
+  return day?.runs?.[0]?.coverageZone?.[0]?.street || '';
+}
+function currentRunStreet() {
+  return activeRun()?.coverageZone?.[0]?.street || firstRunStreet() || gpsStreet || '';
+}
+function lastRunStreet() {
+  const runs = day?.runs || [];
+  for (let i = runs.length - 1; i >= 0; i--) {
+    const street = runs[i]?.coverageZone?.[0]?.street;
+    if (street) return street;
+  }
+  return firstRunStreet() || gpsStreet || '';
+}
+
+function normalizeStreetName(street) {
+  const s = String(street || '').trim();
+  if (!s) return '';
+  return s.replace(/\bStreet\b/gi, 'St').replace(/\s+/g, ' ').trim();
+}
+function parseBlockHundreds(blockRange) {
+  const m = String(blockRange || '').trim().match(/^(\d{1,4})/);
+  return m ? parseInt(m[1], 10) : null;
+}
+function formatBlockLabel(blockRange) {
+  const n = parseBlockHundreds(blockRange);
+  if (n != null) return `${n}'s`;
+  return String(blockRange || '').trim();
+}
+function compactBlockRanges(blockRanges) {
+  const parsed = [];
+  const passthrough = [];
+  blockRanges.forEach(br => {
+    const n = parseBlockHundreds(br);
+    if (n != null) parsed.push(n);
+    else if (String(br || '').trim()) passthrough.push(String(br).trim());
+  });
+  const uniq = [...new Set(parsed)].sort((a,b)=>a-b);
+  const parts = [];
+  let start = null, prev = null;
+  uniq.forEach(n => {
+    if (start == null) { start = prev = n; return; }
+    if (n === prev + 100) { prev = n; return; }
+    parts.push(start === prev ? `${start}'s` : `${start}'s - ${prev}'s`);
+    start = prev = n;
+  });
+  if (start != null) parts.push(start === prev ? `${start}'s` : `${start}'s - ${prev}'s`);
+  passthrough.forEach(p => parts.push(formatBlockLabel(p)));
+  return parts;
+}
+function joinWithAmpersand(parts) {
+  if (!parts.length) return '';
+  if (parts.length === 1) return parts[0];
+  if (parts.length === 2) return `${parts[0]} & ${parts[1]}`;
+  return `${parts.slice(0, -1).join(', ')} & ${parts[parts.length - 1]}`;
+}
+function formatCoverageZone(zone) {
+  const items = Array.isArray(zone) ? zone : [];
+  const groups = new Map();
+  const streetOrder = [];
+  items.forEach(z => {
+    const street = normalizeStreetName(z?.street);
+    const blockRange = String(z?.blockRange || '').trim();
+    if (!street && !blockRange) return;
+    const key = street || `__nostreet__${streetOrder.length}`;
+    if (!groups.has(key)) { groups.set(key, { street, blocks: [] }); streetOrder.push(key); }
+    groups.get(key).blocks.push(blockRange);
+  });
+  return streetOrder.map(key => {
+    const group = groups.get(key);
+    const blocks = compactBlockRanges(group.blocks);
+    if (group.street && blocks.length) return `${joinWithAmpersand(blocks)} ${group.street}`;
+    if (group.street) return group.street;
+    return joinWithAmpersand(blocks);
+  }).join(' · ');
+}
+
+// ── THEME ──
+function toggleTheme() {
+  isDark = !isDark;
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  document.getElementById('theme-btn').textContent = isDark ? '☀ Light' : '☾ Dark';
+  localStorage.setItem('bd_theme', isDark ? 'dark' : 'light'); // paint hint for instant theme on next open
+  idbSet('theme', isDark ? 'dark' : 'light');
+}
+
+// ── DATE / TIME ──
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function niceDate(str) {
+  const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const d = new Date(str + 'T12:00:00');
+  return `${DAYS[d.getDay()]}, ${MONTHS[d.getMonth()]} ${d.getDate()}`;
+}
+function shortDay(str) {
+  const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const d = new Date(str + 'T12:00:00');
+  return DAYS[d.getDay()];
+}
+function nowTime() {
+  const d = new Date();
+  return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+function fmtTime(t) {
+  if (!t) return '—';
+  const [h, m] = t.split(':').map(Number);
+  return `${h % 12 || 12}:${String(m).padStart(2,'0')}${h >= 12 ? 'pm' : 'am'}`;
+}
+function calcDur(s, e) {
+  if (!s || !e) return null;
+  const [sh, sm] = s.split(':').map(Number);
+  const [eh, em] = e.split(':').map(Number);
+  let mins = (eh * 60 + em) - (sh * 60 + sm);
+  if (mins < 0) mins += 1440;
+  const hr = Math.floor(mins / 60), mn = mins % 60;
+  return hr > 0 ? `${hr}h ${mn}m` : `${mn}m`;
+}
+function elapsedSince(t) {
+  const [sh, sm] = t.split(':').map(Number);
+  const now = new Date();
+  let secs = (now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds()) - (sh * 3600 + sm * 60);
+  if (secs < 0) secs += 86400;
+  const h = Math.floor(secs / 3600), m = Math.floor((secs % 3600) / 60), s = secs % 60;
+  if (h > 0) return `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  return `${m}:${String(s).padStart(2,'0')}`;
+}
+
+// ── PERSIST (IndexedDB — durable, survives mobile-Chrome overnight) ──
+const IDB_NAME = 'blockdoc', IDB_STORE = 'kv';
+let _idb = null;
+function idbOpen() {
+  return new Promise((res, rej) => {
+    const rq = indexedDB.open(IDB_NAME, 1);
+    rq.onupgradeneeded = () => rq.result.createObjectStore(IDB_STORE);
+    rq.onsuccess = () => res(rq.result);
+    rq.onerror = () => rej(rq.error);
+  });
+}
+function idbGet(key) {
+  return new Promise(res => {
+    if (!_idb) return res(undefined);
+    try {
+      const rq = _idb.transaction(IDB_STORE, 'readonly').objectStore(IDB_STORE).get(key);
+      rq.onsuccess = () => res(rq.result);
+      rq.onerror = () => res(undefined);
+    } catch (e) { res(undefined); }
+  });
+}
+function idbSet(key, val) {
+  return new Promise(res => {
+    if (!_idb) return res();
+    try {
+      const tx = _idb.transaction(IDB_STORE, 'readwrite');
+      tx.objectStore(IDB_STORE).put(val, key);
+      tx.oncomplete = () => res();
+      tx.onerror = () => res();
+      tx.onabort = () => res();
+    } catch (e) { res(); }
+  });
+}
+function save() { idbSet('day', day); }
+function saveMembers() { idbSet('members', knownMembers); }
+function activeRun() { return day ? day.runs.find(r => r.status === 'active') || null : null; }
+function defaultTallies() {
+  return { inspection: 0, refused: 0, ss: 0, vacantLot: 0, vacantPremises: 0, mapCallElim: 0, newConstruction: 0 };
+}
+function derivedContactCount(t) {
+  return Math.max((t?.contact || 0), (t?.inspection || 0) + (t?.refused || 0) + (t?.ss || 0));
+}
+
+
+// ── ROUTING ──
+function route() {
+  const isToday = day && day.date === todayStr();
+  document.getElementById('screen-setup').classList.toggle('active', !isToday);
+  document.getElementById('screen-main').classList.toggle('active', isToday);
+  document.getElementById('header-date').textContent = shortDay(todayStr());
+  if (!isToday) renderSetup();
+  else renderMain();
+}
+
+// ── SETUP ──
+function renderSetup() {
+  setupSel = []; setupAppts = [];
+  document.getElementById('setup-date').textContent = niceDate(todayStr());
+  renderSetupChips(); renderSetupAppts();
+  document.getElementById('sap-time').value = '09:00';
+}
+function renderSetupChips() {
+  const c = document.getElementById('setup-chips');
+  c.innerHTML = knownMembers.map(m =>
+    `<div class="member-chip ${setupSel.includes(m)?'on':''}" onclick="toggleSetup('${esc(m)}')">${m}</div>`
+  ).join('') + `<div class="member-chip add" onclick="addMemberPrompt()">+ Add</div>`;
+  document.getElementById('begin-btn').disabled = setupSel.length === 0;
+}
+function toggleSetup(n) {
+  setupSel = setupSel.includes(n) ? setupSel.filter(x=>x!==n) : [...setupSel, n];
+  renderSetupChips();
+}
+function addMemberPrompt() {
+  const n = prompt('New member name:');
+  if (!n || !n.trim()) return;
+  const name = n.trim();
+  if (!knownMembers.includes(name)) { knownMembers.push(name); saveMembers(); }
+  if (!setupSel.includes(name)) setupSel.push(name);
+  renderSetupChips();
+}
+function showSetupApptAdd() {
+  document.getElementById('setup-appt-inline').classList.add('open');
+  document.getElementById('setup-appt-toggle').style.display = 'none';
+  document.getElementById('sap-addr').value = '';
+  document.getElementById('sap-addr').focus();
+}
+function hideSetupApptAdd() {
+  document.getElementById('setup-appt-inline').classList.remove('open');
+  document.getElementById('setup-appt-toggle').style.display = '';
+}
+function confirmSetupAppt() {
+  const t = document.getElementById('sap-time').value; if (!t) return;
+  const addr = document.getElementById('sap-addr').value.trim();
+  setupAppts.push({ id: Date.now(), time: t, address: addr });
+  setupAppts.sort((a,b) => a.time.localeCompare(b.time));
+  hideSetupApptAdd(); renderSetupAppts();
+  const [h,m] = t.split(':').map(Number);
+  const next = new Date(); next.setHours(h+1, m, 0, 0);
+  document.getElementById('sap-time').value = `${String(next.getHours()).padStart(2,'0')}:${String(next.getMinutes()).padStart(2,'0')}`;
+}
+function removeSetupAppt(id) { setupAppts = setupAppts.filter(a => a.id !== id); renderSetupAppts(); }
+function renderSetupAppts() {
+  const list = document.getElementById('setup-appt-list');
+  if (!setupAppts.length) { list.innerHTML = '<div class="setup-appt-empty">None scheduled</div>'; return; }
+  list.innerHTML = setupAppts.map(a => `
+    <div class="setup-appt-row">
+      <span class="sap-time">${fmtTime(a.time)}</span>
+      <span class="sap-addr">${a.address || '—'}</span>
+      <button class="sap-rm" onclick="removeSetupAppt(${a.id})">✕</button>
+    </div>`).join('');
+}
+function startDay() {
+  if (!setupSel.length) return;
+  day = {
+    date: todayStr(), teamComp: [...setupSel], compChanges: [], runs: [],
+    appointments: setupAppts.map(a=>({...a})),
+    events: setupAppts.map(a=>({ type:'appointment', time:a.time, address:a.address }))
+  };
+  setupAppts = []; save(); route();
+}
+
+// ── MAIN ──
+function renderMain() {
+  document.getElementById('team-names').textContent = day.teamComp.join(' · ');
+  const run = activeRun();
+  document.getElementById('run-card').style.display = run ? 'block' : 'none';
+  document.getElementById('start-run-btn').disabled = !!run;
+  document.getElementById('start-run-btn').style.opacity = run ? '0.38' : '1';
+  if (run) { renderActiveRun(run); startTimer(run); }
+  else stopTimer();
+  renderLog(); renderTotals();
+}
+function renderActiveRun(run) {
+  document.getElementById('run-zone-display').textContent = formatCoverageZone(run.coverageZone);
+  document.getElementById('street-ctx').textContent = currentRunStreet() || '—';
+  renderTallyUI(run); updateSpecialBtns();
+}
+function onHouseInput() { updateSpecialBtns(); }
+function updateSpecialBtns() {
+  const ok = (document.getElementById('house-input')?.value || '').trim().length > 0;
+  const m = document.getElementById('rb-mapcall');
+  const n = document.getElementById('rb-newconstr');
+  if (m) m.disabled = !ok;
+  if (n) n.disabled = !ok;
+}
+
+// ── v4: PREMISES TICK ──
+function adjPremises(delta) {
+  const run = activeRun(); if (!run) return;
+  const current = run.premisesFinal ?? run.premisesCount ?? 0;
+  const next = Math.max(0, current + delta);
+  if (run.premisesCount == null) run.premisesCount = next;
+  run.premisesFinal = next;
+  save(); renderTallyUI(run); renderTotals();
+  if (delta > 0) flashNum('run-premises-count');
+}
+
+function renderTallyUI(run) {
+  const t = run.tallies || defaultTallies();
+  ['inspection','refused','ss','vacantLot','vacantPremises'].forEach(k => {
+    const el = document.getElementById(`tc-${k}`);
+    if (el) el.textContent = t[k] || 0;
+  });
+  const contacts = derivedContactCount(t);
+  const cc = document.getElementById('run-contacts-count');
+  if (cc) cc.textContent = contacts;
+  const ic = document.getElementById('run-inspection-count');
+  if (ic) ic.textContent = t.inspection || 0;
+  // v4: direct tick display, no net
+  const prem = run.premisesFinal ?? run.premisesCount;
+  const pc = document.getElementById('run-premises-count');
+  if (pc) pc.innerHTML = prem != null ? prem : '<span class="unset">—</span>';
+  // door hangers
+  const utilized = contacts + (t.vacantLot||0) + (t.vacantPremises||0) + (t.mapCallElim||0) + (t.newConstruction||0);
+  const dh = document.getElementById('derived-hangers');
+  if (dh) dh.textContent = prem != null ? Math.max(0, prem - utilized) : '—';
+}
+
+function flashNum(elId) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  el.style.transition = 'transform 0s';
+  el.style.transform = 'scale(1.35)';
+  requestAnimationFrame(() => { el.style.transition = 'transform 0.22s'; el.style.transform = 'scale(1)'; });
+}
+
+// ── ADD STREET INLINE ──
+function toggleAddStreet() {
+  addStreetOpen = !addStreetOpen;
+  const el = document.getElementById('add-street-inline');
+  el.classList.toggle('hidden', !addStreetOpen);
+  if (addStreetOpen) {
+    document.getElementById('asi-street-name').value = currentRunStreet();
+    document.getElementById('asi-dial-custom').value = '';
+    asiBlockRange = '100s';
+    const dialEl = document.getElementById('asi-dial');
+    buildDialItems(dialEl);
+    requestAnimationFrame(() => dialScrollTo(dialEl, '100s'));
+    document.getElementById('asi-street-name').focus();
+    document.getElementById('asi-street-name').select();
+  }
+}
+function onAsiDial() {
+  const dialEl = document.getElementById('asi-dial');
+  const custom = document.getElementById('asi-dial-custom').value.trim();
+  if (!custom) asiBlockRange = getDialVal(dialEl);
+}
+function onAsiCustom() {
+  const v = document.getElementById('asi-dial-custom').value.trim();
+  if (v) asiBlockRange = v;
+  else asiBlockRange = getDialVal(document.getElementById('asi-dial'));
+}
+function confirmAddStreet() {
+  const run = activeRun(); if (!run) return;
+  const streetInput = document.getElementById('asi-street-name').value.trim();
+  const street = streetInput || currentRunStreet();
+  if (!street) return;
+  run.coverageZone.push({ street, blockRange: asiBlockRange });
+  save();
+  document.getElementById('run-zone-display').textContent = formatCoverageZone(run.coverageZone);
+  document.getElementById('street-ctx').textContent = currentRunStreet() || '—';
+  toggleAddStreet();
+  renderLog();
+}
+
+// ── TIMER ──
+function startTimer(run) {
+  stopTimer();
+  timerIv = setInterval(() => {
+    if (run.startTime) document.getElementById('run-timer').textContent = elapsedSince(run.startTime);
+  }, 1000);
+}
+function stopTimer() { if (timerIv) { clearInterval(timerIv); timerIv = null; } }
+
+// ── GPS ──
+function fetchGpsStreet(cb) {
+  if (!navigator.geolocation) return;
+  navigator.geolocation.getCurrentPosition(async pos => {
+    try {
+      const { latitude: lat, longitude: lon } = pos.coords;
+      const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`, { headers: { 'Accept-Language': 'en' } });
+      const d = await r.json();
+      const road = d.address?.road || d.address?.street || '';
+      if (road) { gpsStreet = road; if (cb) cb(road); }
+    } catch(e) {}
+  }, ()=>{}, { enableHighAccuracy: true, timeout: 8000 });
+}
+
+// ── TALLY ──
+function adjTally(key, delta) {
+  const run = activeRun(); if (!run) return;
+  if (!run.tallies) run.tallies = defaultTallies();
+  run.tallies[key] = Math.max(0, (run.tallies[key] || 0) + delta);
+  save(); renderTallyUI(run); renderTotals();
+  const elId = key === 'vacantLot' ? 'tc-vacantLot' : key === 'vacantPremises' ? 'tc-vacantPremises' : `tc-${key}`;
+  if (delta > 0) flashNum(elId);
+}
+function submitSpecial(result) {
+  const house = (document.getElementById('house-input')?.value || '').trim();
+  if (!house) return;
+  const run = activeRun(); if (!run) return;
+  if (!run.tallies) run.tallies = defaultTallies();
+  if (!run.specials) run.specials = [];
+  const street = run.coverageZone[0]?.street || '';
+  const entry = { id: Date.now(), houseNumber: house, street, result, time: nowTime() };
+  run.specials.push(entry);
+  const key = result === 'MapCall Elim' ? 'mapCallElim' : 'newConstruction';
+  run.tallies[key] = (run.tallies[key] || 0) + 1;
+  day.events.push({ type: 'address', runId: run.id, ...entry });
+  save();
+  document.getElementById('house-input').value = '';
+  updateSpecialBtns(); renderTallyUI(run); renderLog(); renderTotals();
+}
+
+// ── RUN MODAL ──
+function openRunModal() {
+  const defaultStreet = lastRunStreet();
+  zonePairs = [{ street: defaultStreet, blockRange: '100s' }];
+  document.getElementById('run-start-time').value = nowTime();
+  document.getElementById('run-premises-input').value = '';
+  renderZonePairs();
+  document.getElementById('modal-run').classList.add('open');
+  if (!defaultStreet) {
+    fetchGpsStreet(road => {
+      if (zonePairs[0] && !zonePairs[0].street) { zonePairs[0].street = road; renderZonePairs(); }
+    });
+  }
+}
+function renderZonePairs() {
+  document.getElementById('zone-pairs-container').innerHTML = zonePairs.map((zp, i) => `
+    <div class="zone-pair" id="zp-${i}">
+      <div style="flex:1">
+        <input type="text" class="form-input" style="margin-bottom:0.35rem"
+          placeholder="Street name" value="${esc(zp.street)}"
+          oninput="zonePairs[${i}].street=this.value"
+          autocomplete="off" autocorrect="off" spellcheck="false">
+        <div class="dial-wrap">
+          <div class="dial-chrome">
+            <div class="dial-hl-top"></div>
+            <div class="dial-hl-bot"></div>
+            <div class="dial-fade-t"></div>
+            <div class="dial-fade-b"></div>
+            <div class="dial-scroll" id="dial-${i}" onscroll="onZoneDial(${i})"></div>
+          </div>
+          <input class="dial-custom" id="dcustom-${i}" placeholder="or type custom block range…"
+            value="${DIAL_VALS.includes(zp.blockRange)?'':esc(zp.blockRange)}"
+            oninput="onZoneCustom(${i},this.value)">
+        </div>
+      </div>
+      ${zonePairs.length > 1 ? `<button class="zone-rm" onclick="rmZone(${i})">✕</button>` : ''}
+    </div>`).join('');
+  requestAnimationFrame(() => {
+    zonePairs.forEach((zp, i) => {
+      const el = document.getElementById(`dial-${i}`);
+      if (!el) return;
+      buildDialItems(el);
+      requestAnimationFrame(() => dialScrollTo(el, DIAL_VALS.includes(zp.blockRange) ? zp.blockRange : '100s'));
+    });
+  });
+}
+function onZoneDial(i) {
+  const el = document.getElementById(`dial-${i}`);
+  const custom = document.getElementById(`dcustom-${i}`)?.value?.trim();
+  if (!custom) zonePairs[i].blockRange = getDialVal(el);
+}
+function onZoneCustom(i, val) {
+  const v = val.trim();
+  zonePairs[i].blockRange = v || getDialVal(document.getElementById(`dial-${i}`));
+}
+function addZonePair() { const defaultStreet = zonePairs[0]?.street || lastRunStreet(); zonePairs.push({ street: defaultStreet, blockRange: '100s' }); renderZonePairs(); }
+function rmZone(i) { zonePairs.splice(i, 1); renderZonePairs(); }
+function confirmStartRun() {
+  const valid = zonePairs.filter(z => z.street.trim());
+  if (!valid.length) return;
+  const t = document.getElementById('run-start-time').value || nowTime();
+  const pcRaw = document.getElementById('run-premises-input').value;
+  const pc = pcRaw !== '' ? parseInt(pcRaw) : null;
+  const run = {
+    id: Date.now(), coverageZone: valid, startTime: t, startTimeEstimated: false,
+    stopTime: null, status: 'active',
+    premisesCount: (!isNaN(pc) && pc != null) ? pc : null,
+    premisesFinal: (!isNaN(pc) && pc != null) ? pc : null,
+    tallies: defaultTallies(), specials: [], addresses: []
+  };
+  day.runs.push(run);
+  day.events.push({ type: 'run-start', runId: run.id, time: t, zone: valid });
+  save(); closeModal('modal-run'); renderMain();
+}
+
+function renderEditZonePairs() {
+  const container = document.getElementById('edit-zone-pairs-container');
+  if (!container) return;
+  container.innerHTML = editZonePairs.map((zp, i) => `
+    <div class="edit-zone-row" id="ezp-${i}">
+      <div class="edit-zone-main">
+        <input type="text" class="form-input"
+          placeholder="Street name" value="${esc(zp.street)}"
+          oninput="editZonePairs[${i}].street=this.value"
+          autocomplete="off" autocorrect="off" spellcheck="false">
+        <div class="dial-wrap">
+          <div class="dial-chrome">
+            <div class="dial-hl-top"></div>
+            <div class="dial-hl-bot"></div>
+            <div class="dial-fade-t"></div>
+            <div class="dial-fade-b"></div>
+            <div class="dial-scroll" id="edit-dial-${i}" onscroll="onEditZoneDial(${i})"></div>
+          </div>
+          <input class="dial-custom" id="edit-dcustom-${i}" placeholder="or type custom block range…"
+            value="${DIAL_VALS.includes(zp.blockRange)?'':esc(zp.blockRange)}"
+            oninput="onEditZoneCustom(${i},this.value)">
+        </div>
+      </div>
+      ${editZonePairs.length > 1 ? `<button class="zone-rm" onclick="rmEditZonePair(${i})">✕</button>` : ''}
+    </div>`).join('');
+  requestAnimationFrame(() => {
+    editZonePairs.forEach((zp, i) => {
+      const el = document.getElementById(`edit-dial-${i}`);
+      if (!el) return;
+      buildDialItems(el);
+      requestAnimationFrame(() => dialScrollTo(el, DIAL_VALS.includes(zp.blockRange) ? zp.blockRange : '100s'));
+    });
+  });
+}
+function onEditZoneDial(i) {
+  const el = document.getElementById(`edit-dial-${i}`);
+  const custom = document.getElementById(`edit-dcustom-${i}`)?.value?.trim();
+  if (!custom) editZonePairs[i].blockRange = getDialVal(el);
+}
+function onEditZoneCustom(i, val) {
+  const v = val.trim();
+  editZonePairs[i].blockRange = v || getDialVal(document.getElementById(`edit-dial-${i}`));
+}
+function addEditZonePair() {
+  const defaultStreet = editZonePairs[0]?.street || lastRunStreet();
+  editZonePairs.push({ street: defaultStreet, blockRange: '100s' });
+  renderEditZonePairs();
+}
+function rmEditZonePair(i) {
+  editZonePairs.splice(i, 1);
+  renderEditZonePairs();
+}
+function renderEditSpecials() {
+  const list = document.getElementById('edit-specials-list');
+  if (!list) return;
+  if (!editSpecials.length) {
+    list.innerHTML = '<div class="edit-empty">None</div>';
+    return;
+  }
+  list.innerHTML = editSpecials.map((s, i) => `
+    <div class="edit-special-row">
+      <input type="text" class="form-input" inputmode="numeric" placeholder="#" value="${esc(s.houseNumber || '')}" oninput="editSpecials[${i}].houseNumber=this.value">
+      <input type="time" class="form-input" value="${esc(s.time || '')}" oninput="editSpecials[${i}].time=this.value">
+      <select class="form-input" onchange="editSpecials[${i}].result=this.value">
+        <option value="MapCall Elim" ${s.result === 'MapCall Elim' ? 'selected' : ''}>MapCall Elim</option>
+        <option value="New Construction" ${s.result === 'New Construction' ? 'selected' : ''}>New Construction</option>
+      </select>
+      <button class="zone-rm" style="margin-top:0" onclick="removeEditSpecial(${i})">✕</button>
+    </div>`).join('');
+}
+function addEditSpecial() {
+  const run = day?.runs?.find(r => r.id === editingRunId);
+  const street = run?.coverageZone?.[0]?.street || '';
+  editSpecials.push({ id: Date.now() + Math.floor(Math.random()*1000), houseNumber: '', street, result: 'MapCall Elim', time: nowTime() });
+  renderEditSpecials();
+}
+function removeEditSpecial(i) {
+  editSpecials.splice(i, 1);
+  renderEditSpecials();
+}
+function openEditRunModal(runId = null) {
+  const targetId = runId || activeRun()?.id;
+  const run = day?.runs?.find(r => r.id === targetId);
+  if (!run) return;
+  editingRunId = run.id;
+  editZonePairs = (run.coverageZone || []).map(z => ({ street: z.street || '', blockRange: z.blockRange || '100s' }));
+  if (!editZonePairs.length) editZonePairs = [{ street: lastRunStreet(), blockRange: '100s' }];
+  editSpecials = (run.specials || []).map(s => ({ ...s }));
+  document.getElementById('edit-run-start-time').value = run.startTime || '';
+  document.getElementById('edit-run-stop-time').value = run.stopTime || '';
+  document.getElementById('edit-run-premises-count').value = run.premisesCount ?? '';
+  document.getElementById('edit-run-premises-final').value = run.premisesFinal ?? '';
+  const t = run.tallies || defaultTallies();
+  ['inspection','refused','ss','vacantLot','vacantPremises','mapCallElim','newConstruction'].forEach(key => {
+    const el = document.getElementById(`edit-tally-${key}`);
+    if (el) el.value = t[key] ?? 0;
+  });
+  renderEditZonePairs();
+  renderEditSpecials();
+  document.getElementById('modal-edit-run').classList.add('open');
+}
+function saveEditedRun() {
+  const run = day?.runs?.find(r => r.id === editingRunId);
+  if (!run) return;
+  const validZones = editZonePairs.map(z => ({ street: String(z.street || '').trim(), blockRange: String(z.blockRange || '').trim() || '100s' })).filter(z => z.street);
+  if (!validZones.length) return;
+  run.coverageZone = validZones;
+  run.startTime = document.getElementById('edit-run-start-time').value || run.startTime || nowTime();
+  const stopVal = document.getElementById('edit-run-stop-time').value || null;
+  run.stopTime = stopVal;
+  run.status = stopVal ? 'closed' : 'active';
+  const pcRaw = document.getElementById('edit-run-premises-count').value;
+  const pfRaw = document.getElementById('edit-run-premises-final').value;
+  run.premisesCount = pcRaw === '' ? null : Math.max(0, parseInt(pcRaw) || 0);
+  run.premisesFinal = pfRaw === '' ? run.premisesCount : Math.max(0, parseInt(pfRaw) || 0);
+  run.tallies = defaultTallies();
+  ['inspection','refused','ss','vacantLot','vacantPremises','mapCallElim','newConstruction'].forEach(key => {
+    const raw = document.getElementById(`edit-tally-${key}`).value;
+    run.tallies[key] = raw === '' ? 0 : Math.max(0, parseInt(raw) || 0);
+  });
+  const primaryStreet = run.coverageZone?.[0]?.street || '';
+  run.specials = editSpecials.map(s => ({
+    id: s.id || Date.now() + Math.floor(Math.random()*1000),
+    houseNumber: String(s.houseNumber || '').trim(),
+    street: primaryStreet,
+    result: s.result === 'New Construction' ? 'New Construction' : 'MapCall Elim',
+    time: s.time || nowTime()
+  })).filter(s => s.houseNumber);
+  run.tallies.mapCallElim = run.specials.filter(s => s.result === 'MapCall Elim').length || run.tallies.mapCallElim;
+  run.tallies.newConstruction = run.specials.filter(s => s.result === 'New Construction').length || run.tallies.newConstruction;
+  if (day.events) {
+    day.events = day.events.filter(ev => !(ev.type === 'address' && ev.runId === run.id));
+    run.specials.forEach(s => day.events.push({ type: 'address', runId: run.id, ...s }));
+  }
+  save();
+  closeModal('modal-edit-run');
+  addStreetOpen = false;
+  renderMain();
+}
+
+function deleteRun(runId) {
+  const run = day?.runs?.find(r => r.id === runId);
+  if (!run) return;
+  const label = formatCoverageZone(run.coverageZone) || 'this run';
+  if (!confirm(`Delete ${label}? This cannot be undone.`)) return;
+  const wasActive = run.status === 'active';
+  day.runs = day.runs.filter(r => r.id !== runId);
+  if (day.events) {
+    day.events = day.events.filter(ev => {
+      if (ev.runId === runId) return false;
+      if (ev.type === 'address' && ev.runId === runId) return false;
+      return true;
+    });
+  }
+  save();
+  if (wasActive) addStreetOpen = false;
+  renderMain();
+}
+
+// ── STOP RUN ──
+function stopRun() {
+  const run = activeRun(); if (!run) return;
+  const zstr = formatCoverageZone(run.coverageZone);
+  document.getElementById('stop-modal-title').textContent = zstr;
+  document.getElementById('run-stop-time').value = nowTime();
+  const prem = run.premisesFinal ?? run.premisesCount;
+  document.getElementById('stop-premises-input').value = prem ?? '';
+  const t = run.tallies || defaultTallies();
+  const utilized = derivedContactCount(t) + (t.vacantLot||0) + (t.vacantPremises||0) + (t.mapCallElim||0) + (t.newConstruction||0);
+  const hangers = prem != null ? Math.max(0, prem - utilized) : '?';
+  const rows = [
+    ['Started', fmtTime(run.startTime)],
+    derivedContactCount(t) ? ['Contacts', derivedContactCount(t)] : null,
+    t.inspection     ? ['Inspection', t.inspection] : null,
+    t.refused        ? ['Refused', t.refused] : null,
+    t.ss             ? ['Handed', t.ss] : null,
+    t.vacantLot      ? ['Vac. Lot', t.vacantLot] : null,
+    t.vacantPremises ? ['Vac. Prem', t.vacantPremises] : null,
+    t.mapCallElim    ? ['MC Elim', t.mapCallElim] : null,
+    t.newConstruction ? ['New Const', t.newConstruction] : null,
+    prem != null ? ['Hangers (auto)', hangers] : null,
+  ].filter(Boolean);
+  document.getElementById('stop-summary').innerHTML =
+    rows.map(([l,v]) => `<span style="color:var(--muted)">${l}</span>  ${v}`).join('\n');
+  document.getElementById('modal-stop').classList.add('open');
+}
+function confirmStopRun() {
+  const run = activeRun(); if (!run) return;
+  run.stopTime = document.getElementById('run-stop-time').value || nowTime();
+  const pfRaw = document.getElementById('stop-premises-input').value;
+  if (pfRaw !== '') {
+    const pf = parseInt(pfRaw);
+    if (!isNaN(pf) && pf >= 0) { if (run.premisesCount == null) run.premisesCount = pf; run.premisesFinal = pf; }
+  }
+  run.status = 'closed';
+  day.events.push({ type: 'run-end', runId: run.id, time: run.stopTime, zone: run.coverageZone, dur: calcDur(run.startTime, run.stopTime) });
+  save(); closeModal('modal-stop'); addStreetOpen = false; renderMain();
+}
+
+// ── APPOINTMENT ──
+function openApptModal() {
+  document.getElementById('appt-time').value = nowTime();
+  document.getElementById('appt-addr').value = '';
+  document.getElementById('modal-appt').classList.add('open');
+}
+function confirmAppt() {
+  const t = document.getElementById('appt-time').value || nowTime();
+  const addr = document.getElementById('appt-addr').value.trim();
+  day.appointments.push({ id: Date.now(), time: t, address: addr });
+  day.events.push({ type: 'appointment', time: t, address: addr });
+  save(); closeModal('modal-appt'); renderLog(); renderTotals();
+}
+
+// ── LUNCH / BREAK ──
+function openLunchModal() {
+  const t = nowTime();
+  document.getElementById('lunch-label').value = 'Lunch';
+  document.getElementById('lunch-start').value = t;
+  document.getElementById('lunch-stop').value = '';
+  document.getElementById('lunch-dur-display').textContent = '—';
+  document.getElementById('modal-lunch').classList.add('open');
+}
+function updateLunchDur() {
+  const s = document.getElementById('lunch-start').value;
+  const e = document.getElementById('lunch-stop').value;
+  const d = calcDur(s, e);
+  document.getElementById('lunch-dur-display').textContent = d || '—';
+}
+function confirmLunch() {
+  const label = document.getElementById('lunch-label').value.trim() || 'Lunch';
+  const startTime = document.getElementById('lunch-start').value || nowTime();
+  const stopTime = document.getElementById('lunch-stop').value || '';
+  const dur = calcDur(startTime, stopTime);
+  day.events.push({ type: 'lunch', time: startTime, label, startTime, stopTime, dur });
+  save(); closeModal('modal-lunch'); renderLog(); renderTotals();
+}
+
+// ── TEAM MODAL ──
+function openTeamModal() {
+  teamEditSel = [...day.teamComp]; renderTeamModal();
+  document.getElementById('modal-team').classList.add('open');
+}
+function renderTeamModal() {
+  document.getElementById('team-modal-chips').innerHTML = knownMembers.map(m =>
+    `<div class="member-chip ${teamEditSel.includes(m)?'on':''}" onclick="toggleTeamEdit('${esc(m)}')">${m}</div>`
+  ).join('');
+  document.getElementById('known-list').innerHTML = knownMembers.map(m => `
+    <div class="member-manage-row">
+      <span class="mmr-name">${m}</span>
+      <button class="mmr-rm" onclick="removeKnown('${esc(m)}')">Remove</button>
+    </div>`).join('');
+}
+function toggleTeamEdit(n) {
+  teamEditSel = teamEditSel.includes(n) ? teamEditSel.filter(x=>x!==n) : [...teamEditSel, n];
+  renderTeamModal();
+}
+function addKnownMember() {
+  const input = document.getElementById('new-name-input');
+  const n = input.value.trim(); if (!n) return;
+  if (!knownMembers.includes(n)) { knownMembers.push(n); saveMembers(); }
+  if (!teamEditSel.includes(n)) teamEditSel.push(n);
+  input.value = ''; renderTeamModal();
+}
+function removeKnown(n) {
+  knownMembers = knownMembers.filter(x=>x!==n);
+  teamEditSel = teamEditSel.filter(x=>x!==n);
+  saveMembers(); renderTeamModal();
+}
+function saveTeam() {
+  const old = day.teamComp.join(','), nw = teamEditSel.join(',');
+  day.teamComp = [...teamEditSel];
+  if (old !== nw) {
+    day.events.push({ type: 'team-change', time: nowTime(), team: [...day.teamComp] });
+    day.compChanges.push({ time: nowTime(), team: [...day.teamComp] });
+  }
+  save(); closeModal('modal-team');
+  document.getElementById('team-names').textContent = day.teamComp.join(' · ');
+}
+
+// ── MISSED TIME ──
+function openMissedModal() {
+  const run = activeRun(); if (!run) return;
+  const guess = new Date(); guess.setMinutes(guess.getMinutes() - 15);
+  const gs = `${String(guess.getHours()).padStart(2,'0')}:${String(guess.getMinutes()).padStart(2,'0')}`;
+  document.getElementById('missed-time-input').value = run.startTime || gs;
+  document.getElementById('missed-note').textContent =
+    `No automatic recovery available. Current start: ${fmtTime(run.startTime||gs)}. Defaulting to 15 min ago as a starting point.`;
+  document.getElementById('modal-missed').classList.add('open');
+}
+function saveMissedTime() {
+  const run = activeRun(); if (!run) return;
+  run.startTime = document.getElementById('missed-time-input').value;
+  run.startTimeEstimated = true;
+  save(); closeModal('modal-missed'); renderMain();
+}
+
+// ── LOG RENDER ──
+function renderLog() {
+  const list = document.getElementById('log-list');
+  if (!day) { list.innerHTML = '<div id="log-empty">No entries yet</div>'; return; }
+
+  const timeline = [];
+  day.runs.forEach(run => { timeline.push({ type: 'run', time: run.startTime || '00:00', run }); });
+  day.events.filter(e => e.type === 'appointment').forEach(ev => { timeline.push({ type: 'appointment', time: ev.time, ev }); });
+  day.events.filter(e => e.type === 'lunch').forEach(ev => { timeline.push({ type: 'lunch', time: ev.time, ev }); });
+  day.events.filter(e => e.type === 'team-change').forEach(ev => { timeline.push({ type: 'team', time: ev.time, ev }); });
+
+  if (!timeline.length) { list.innerHTML = '<div id="log-empty">No entries yet</div>'; return; }
+  timeline.sort((a, b) => (a.time||'').localeCompare(b.time||''));
+
+  let html = '';
+  for (const item of timeline) {
+    if (item.type === 'run') html += renderRunLogCard(item.run);
+    else if (item.type === 'appointment') html += renderBreakCard('appt', item.ev);
+    else if (item.type === 'lunch') html += renderLunchCard(item.ev);
+    else if (item.type === 'team') html += renderTeamCard(item.ev);
+  }
+  list.innerHTML = html;
+}
+
+// no net badge in log cards
+function renderRunLogCard(run) {
+  const t = run.tallies || defaultTallies();
+  const prem = run.premisesFinal ?? run.premisesCount;
+  const zstr = formatCoverageZone(run.coverageZone);
+  const isActive = run.status === 'active';
+  const dur = run.startTime ? calcDur(run.startTime, run.stopTime || nowTime()) : null;
+  const timeRange = isActive ?
+    `${fmtTime(run.startTime)} → ongoing` :
+    `${fmtTime(run.startTime)} → ${fmtTime(run.stopTime)}`;
+
+  const contacts = derivedContactCount(t);
+  const chips = [
+    { k:'contact',        l:'Contacts',  v:contacts },
+    { k:'inspection',     l:'Insp',      v:t.inspection },
+    { k:'refused',        l:'Refused',   v:t.refused },
+    { k:'ss',             l:'Handed',    v:t.ss },
+    { k:'vacantLot',      l:'Vac.Lot',   v:t.vacantLot },
+    { k:'vacantPremises', l:'Vac.Prem',  v:t.vacantPremises },
+    { k:'mapCallElim',    l:'MC Elim',   v:t.mapCallElim },
+    { k:'newConstruction',l:'New Const', v:t.newConstruction },
+  ].filter(c => c.v > 0);
+
+  const specials = run.specials || [];
+
+  return `<div class="run-log-card ${isActive ? 'active-run' : ''}">
+    <div class="rlc-head">
+      <div class="rlc-head-top">
+        <div class="rlc-zone">${zstr}</div>
+        <div class="rlc-run-actions">
+          <button class="rlc-edit" onclick="openEditRunModal(${run.id})">Edit</button>
+          <button class="rlc-del" onclick="deleteRun(${run.id})">Delete</button>
+        </div>
+      </div>
+      <div class="rlc-meta">
+        <span class="rlc-time">${timeRange}</span>
+        ${dur ? `<span class="rlc-dur">${dur}</span>` : ''}
+        ${isActive ? '<span class="rlc-live">●</span>' : ''}
+      </div>
+    </div>
+    ${(prem != null || chips.length || specials.length) ? `
+    <div class="rlc-body">
+      ${prem != null ? `<div class="rlc-prem-row">
+        <span class="rlc-prem-n">${prem}</span>
+        <span class="rlc-prem-l">premises</span>
+        <span class="rlc-prem-sep">•</span>
+        <span class="rlc-prem-l">contacts</span>
+        <span class="rlc-prem-m">${contacts}</span>
+        <span class="rlc-prem-sep">•</span>
+        <span class="rlc-prem-l">inspection</span>
+        <span class="rlc-prem-m insp">${run.tallies?.inspection || 0}</span>
+      </div>` : ''}
+      ${chips.length ? `<div class="rlc-chips">${chips.map(c =>
+        `<span class="rlc-chip ${c.k==='inspection'?'c-insp':c.k==='contact'?'c-cont':''}"><b>${c.v}</b> ${c.l}</span>`
+      ).join('')}</div>` : ''}
+      ${specials.length ? `<div class="rlc-specials">${specials.map(s =>
+        `<div class="rlc-sp-row">
+          <span class="rlc-sp-num">${s.houseNumber}</span>
+          <span class="rlc-sp-res">${s.result}</span>
+          <span class="rlc-sp-t">${fmtTime(s.time)}</span>
+        </div>`
+      ).join('')}</div>` : ''}
+    </div>` : ''}
+  </div>`;
+}
+
+function renderBreakCard(type, ev) {
+  return `<div class="break-card">
+    <div class="bc-pip ${type}"></div>
+    <div class="bc-time">${fmtTime(ev.time)}</div>
+    <div class="bc-body">
+      <div class="bc-type">Appointment</div>
+      <div class="bc-main">${ev.address || 'Appointment'}</div>
+    </div>
+  </div>`;
+}
+function renderLunchCard(ev) {
+  return `<div class="break-card">
+    <div class="bc-pip lunch"></div>
+    <div class="bc-time">${fmtTime(ev.startTime)}</div>
+    <div class="bc-body">
+      <div class="bc-type">Break</div>
+      <div class="bc-main">${ev.label || 'Lunch'}</div>
+      ${ev.stopTime ? `<div class="bc-sub">${fmtTime(ev.startTime)} → ${fmtTime(ev.stopTime)}${ev.dur ? ' · ' + ev.dur : ''}</div>` : ''}
+    </div>
+  </div>`;
+}
+function renderTeamCard(ev) {
+  return `<div class="break-card">
+    <div class="bc-pip team"></div>
+    <div class="bc-time">${fmtTime(ev.time)}</div>
+    <div class="bc-body">
+      <div class="bc-type">Team Change</div>
+      <div class="bc-main">${ev.team.join(' · ')}</div>
+    </div>
+  </div>`;
+}
+
+// ── TOTALS ──
+function renderTotals() {
+  if (!day) return;
+  const totals = defaultTallies();
+  let totalPremises = 0;
+  let totalMinutes = 0;
+  let totalHangers = 0;
+
+  day.runs.forEach(r => {
+    const t = r.tallies || defaultTallies();
+    Object.keys(totals).forEach(k => { totals[k] += (t[k] || 0); });
+
+    const prem = r.premisesFinal ?? r.premisesCount ?? 0;
+    totalPremises += prem;
+
+    if (r.startTime) {
+      const endT = r.stopTime || nowTime();
+      const [sh, sm] = r.startTime.split(':').map(Number);
+      const [eh, em] = endT.split(':').map(Number);
+      let mins = (eh * 60 + em) - (sh * 60 + sm);
+      if (mins < 0) mins += 1440;
+      totalMinutes += mins;
+    }
+
+    const utilized = derivedContactCount(t) + (t.vacantLot||0) + (t.vacantPremises||0) + (t.mapCallElim||0) + (t.newConstruction||0);
+    totalHangers += Math.max(0, prem - utilized);
+  });
+
+  const appts = day.events.filter(e => e.type === 'appointment').length;
+  const lunches = day.events.filter(e => e.type === 'lunch').length;
+  const bar = document.getElementById('totals-bar');
+  const hasData = Object.values(totals).some(v=>v>0) || totalPremises > 0 || totalMinutes > 0 || totalHangers > 0 || appts > 0 || lunches > 0;
+  if (!hasData) { bar.classList.remove('show'); return; }
+  bar.classList.add('show');
+
+  const totalContacts = derivedContactCount(totals);
+  const chips = [
+    { k:'contact',        l:'Contacts', cls:'c-cont', v:totalContacts },
+    { k:'inspection',     l:'Insp',     cls:'c-insp', v:totals.inspection },
+    { k:'refused',        l:'Refused',  cls:'',       v:totals.refused },
+    { k:'ss',             l:'Handed',   cls:'',       v:totals.ss },
+    { k:'vacantLot',      l:'Vac.Lot',  cls:'',       v:totals.vacantLot },
+    { k:'vacantPremises', l:'Vac.Prem', cls:'',       v:totals.vacantPremises },
+    { k:'mapCallElim',    l:'MC Elim',  cls:'',       v:totals.mapCallElim },
+    { k:'newConstruction',l:'New Const',cls:'',       v:totals.newConstruction },
+  ];
+  document.getElementById('totals-chips').innerHTML =
+    (totalPremises > 0 ? `<div class="tot-chip c-prem"><span class="tot-n">${totalPremises}</span><span class="tot-l">Prem</span></div>` : '') +
+    (totalMinutes > 0 ? `<div class="tot-chip"><span class="tot-n">${totalMinutes}</span><span class="tot-l">Min</span></div>` : '') +
+    (totalHangers > 0 ? `<div class="tot-chip"><span class="tot-n">${totalHangers}</span><span class="tot-l">Hangers</span></div>` : '') +
+    chips.filter(c=>c.v).map(c => `
+      <div class="tot-chip ${c.cls}">
+        <span class="tot-n">${c.v}</span>
+        <span class="tot-l">${c.l}</span>
+      </div>`).join('') +
+    (appts ? `<div class="tot-chip"><span class="tot-n">${appts}</span><span class="tot-l">Appt</span></div>` : '') +
+    (lunches ? `<div class="tot-chip"><span class="tot-n">${lunches}</span><span class="tot-l">Break</span></div>` : '');
+}
+
+// ── CLEAR ──
+function openClearModal() { resetClear(); document.getElementById('modal-clear').classList.add('open'); }
+function showClearStep2() { document.getElementById('clear-s1').classList.remove('show'); document.getElementById('clear-s2').classList.add('show'); }
+function resetClear() { document.getElementById('clear-s1').classList.add('show'); document.getElementById('clear-s2').classList.remove('show'); }
+function confirmClear() {
+  day = null; idbSet('day', null);
+  closeModal('modal-clear'); resetClear(); stopTimer(); route();
+}
+
+// ── MODAL UTILS ──
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function esc(s) { return String(s).replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
+
+// tap backdrop to close
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) closeModal(el.id); });
+});
+
+// ── v4: SWIPE-DOWN TO DISMISS MODALS ──
+function initModalSwipe() {
+  document.querySelectorAll('.modal-sheet').forEach(sheet => {
+    let startY = 0, lastY = 0, dragging = false, canDismiss = false;
+
+    const onStart = e => {
+      const target = e.target;
+      const dialArea = target.closest('.dial-scroll, .dial-chrome, .dial-custom');
+      const handleArea = target.closest('.sheet-handle');
+      const atTop = sheet.scrollTop <= 0;
+      canDismiss = !dialArea && (handleArea || atTop);
+      if (!canDismiss) return;
+      startY = e.touches[0].clientY;
+      lastY = startY;
+      dragging = true;
+      sheet.style.transition = 'none';
+    };
+
+    const onMove = e => {
+      if (!dragging || !canDismiss) return;
+      lastY = e.touches[0].clientY;
+      const dy = Math.max(0, lastY - startY);
+      const dampened = dy < 100 ? dy : 100 + (dy - 100) * 0.4;
+      sheet.style.transform = `translateY(${dampened}px)`;
+    };
+
+    const onEnd = () => {
+      if (!dragging || !canDismiss) {
+        dragging = false;
+        canDismiss = false;
+        return;
+      }
+      dragging = false;
+      const dy = lastY - startY;
+      sheet.style.transition = 'transform 0.22s cubic-bezier(0.32,0,0.67,0)';
+      if (dy > 72) {
+        sheet.style.transform = `translateY(110%)`;
+        const overlay = sheet.closest('.modal-overlay');
+        setTimeout(() => {
+          if (overlay) closeModal(overlay.id);
+          sheet.style.transform = '';
+          sheet.style.transition = '';
+        }, 200);
+      } else {
+        sheet.style.transform = '';
+        setTimeout(() => { sheet.style.transition = ''; }, 240);
+      }
+      canDismiss = false;
+    };
+
+    sheet.addEventListener('touchstart', onStart, { passive: true });
+    sheet.addEventListener('touchmove', onMove, { passive: true });
+    sheet.addEventListener('touchend', onEnd);
+  });
+}
+
+// ── v4: BACK GUARD ──
+// Push a guard state so the OS back button doesn't silently exit
+history.pushState({ bd: 'guard' }, '', location.href);
+
+window.addEventListener('popstate', () => {
+  if (!day) return; // no active day, let it go
+  // any open modal → close it instead
+  const openModal = document.querySelector('.modal-overlay.open');
+  if (openModal) {
+    closeModal(openModal.id);
+    history.pushState({ bd: 'guard' }, '', location.href);
+    return;
+  }
+  // show leave warning
+  showBackGuard();
+  history.pushState({ bd: 'guard' }, '', location.href);
+});
+
+window.addEventListener('beforeunload', e => {
+  if (day) { e.preventDefault(); e.returnValue = ''; }
+});
+
+function showBackGuard() {
+  backGuardShowing = true;
+  document.getElementById('back-guard').classList.add('show');
+}
+function closeBackGuard() {
+  backGuardShowing = false;
+  document.getElementById('back-guard').classList.remove('show');
+}
+function leaveConfirmed() {
+  backGuardShowing = false;
+  document.getElementById('back-guard').classList.remove('show');
+  window.onbeforeunload = null;
+  // try to go back; if that fails, just let it sit
+  history.go(-2);
+}
+
+function migrateDayTallies() {
+  if (!day?.runs) return;
+  day.runs.forEach(run => {
+    if (!run.tallies) run.tallies = defaultTallies();
+    if (run.tallies.ss == null) run.tallies.ss = 0;
+  });
+}
+// ── INIT (async: load durable state from IndexedDB before first render) ──
+(async function boot() {
+  // Ask the browser to keep our storage and not evict it overnight.
+  try { if (navigator.storage && navigator.storage.persist) await navigator.storage.persist(); } catch (e) {}
+  try {
+    _idb = await idbOpen();
+    let t = await idbGet('theme'), m = await idbGet('members'), d = await idbGet('day');
+    // One-time migration from the old localStorage store (carries forward any existing day).
+    if (t === undefined && m === undefined && d === undefined) {
+      const lt = localStorage.getItem('bd_theme'), lm = localStorage.getItem('bd_members'), ld = localStorage.getItem('bd_day');
+      if (lt !== null || lm !== null || ld !== null) {
+        t = lt === 'dark' ? 'dark' : 'light';
+        try { m = lm ? JSON.parse(lm) : undefined; } catch (e) {}
+        try { d = ld ? JSON.parse(ld) : undefined; } catch (e) {}
+        if (t !== undefined) await idbSet('theme', t);
+        if (m !== undefined) await idbSet('members', m);
+        if (d !== undefined && d !== null) await idbSet('day', d);
+      }
+    }
+    if (t !== undefined) isDark = (t === 'dark');
+    if (Array.isArray(m)) knownMembers = m;
+    if (d !== undefined && d !== null) day = d;
+  } catch (e) { /* defaults already set above */ }
+
+  migrateDayTallies();
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  document.getElementById('theme-btn').textContent = isDark ? '☀ Light' : '☾ Dark';
+  initModalSwipe();
+  route();
+})();
+</script>
+</body>
+</html>
