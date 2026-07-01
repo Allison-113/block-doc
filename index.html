@@ -124,6 +124,62 @@ header { background:var(--header-bg); padding:0.9rem 1.25rem 0; position:sticky;
 /* MAIN */
 #screen-main { display:none; }
 #screen-main.active { display:block; }
+
+/* ── CALENDAR / HISTORY ── */
+#screen-calendar { display:none; }
+#screen-calendar.active { display:block; }
+#cal-btn { background:none; border:1px solid var(--header-line); border-radius:4px; color:var(--header-ink); font-size:0.62rem; padding:0.22rem 0.5rem; cursor:pointer; font-family:'Space Mono',monospace; letter-spacing:0.06em; transition:all .15s; }
+#cal-btn:hover { border-color:var(--ochre); color:var(--ochre); }
+.cal-top { display:flex; align-items:center; justify-content:space-between; margin:1.1rem 0 0.9rem; }
+.cal-title { font-family:'Jost',sans-serif; font-style:italic; font-weight:600; font-size:1.5rem; color:var(--ochre); }
+.cal-back { background:none; border:1px solid var(--border2); border-radius:5px; color:var(--muted); font-family:'Space Mono',monospace; font-size:0.66rem; letter-spacing:0.08em; padding:0.32rem 0.6rem; cursor:pointer; transition:all .15s; }
+.cal-back:hover { border-color:var(--ochre); color:var(--ochre); }
+.cal-modebar { display:flex; border:1px solid var(--border2); border-radius:6px; overflow:hidden; margin-bottom:0.85rem; }
+.cal-mode { flex:1; background:var(--surface2); border:none; color:var(--muted); font-family:'Space Mono',monospace; font-size:0.66rem; letter-spacing:0.12em; text-transform:uppercase; padding:0.55rem; cursor:pointer; transition:all .15s; }
+.cal-mode.on { background:var(--moss); color:#fff; }
+.cal-nav { display:flex; align-items:center; justify-content:space-between; margin-bottom:0.85rem; }
+.cal-nav button { background:none; border:1px solid var(--border2); border-radius:5px; color:var(--text); font-size:1.05rem; width:34px; height:34px; line-height:1; cursor:pointer; transition:all .15s; }
+.cal-nav button:hover { border-color:var(--ochre); color:var(--ochre); }
+.cal-period { font-family:'Space Mono',monospace; font-size:0.8rem; letter-spacing:0.06em; color:var(--text); text-transform:uppercase; }
+/* week view */
+.cal-week { display:flex; flex-direction:column; gap:0.4rem; }
+.cal-wcell { display:flex; align-items:center; gap:0.75rem; background:var(--surface); border:1px solid var(--border); border-left:3px solid var(--border2); border-radius:7px; padding:0.6rem 0.85rem; }
+.cal-wcell.has { border-left-color:var(--moss); cursor:pointer; transition:transform .1s; }
+.cal-wcell.has:active { transform:scale(0.99); }
+.cal-wcell.today { border-left-color:var(--ochre); }
+.cal-wdate { display:flex; flex-direction:column; align-items:center; min-width:38px; }
+.cal-wdow { font-family:'Space Mono',monospace; font-size:0.55rem; letter-spacing:0.06em; color:var(--muted); text-transform:uppercase; }
+.cal-wnum { font-family:'Jost',sans-serif; font-size:1.35rem; font-weight:600; color:var(--text); line-height:1.05; }
+.cal-wtot { display:flex; gap:1.1rem; flex:1; }
+.cal-none { font-family:'Jost',sans-serif; font-style:italic; font-size:0.82rem; color:var(--muted); }
+.cal-stat { display:flex; flex-direction:column; }
+.cal-stat b { font-family:'Space Mono',monospace; font-size:1.02rem; color:var(--ochre); font-weight:700; line-height:1; }
+.cal-stat span { font-family:'Space Mono',monospace; font-size:0.5rem; letter-spacing:0.06em; color:var(--muted); text-transform:uppercase; margin-top:0.22rem; }
+/* month view */
+.cal-dow { display:grid; grid-template-columns:repeat(7,1fr); gap:0.25rem; margin-bottom:0.3rem; }
+.cal-dow span { text-align:center; font-family:'Space Mono',monospace; font-size:0.55rem; color:var(--muted); }
+.cal-month { display:grid; grid-template-columns:repeat(7,1fr); gap:0.25rem; }
+.cal-mcell { aspect-ratio:1; display:flex; flex-direction:column; align-items:center; background:var(--surface); border:1px solid var(--border); border-radius:5px; padding:0.25rem 0.1rem; }
+.cal-mcell.blank { background:transparent; border:none; }
+.cal-mcell.has { border-color:var(--moss); cursor:pointer; }
+.cal-mcell.today { border-color:var(--ochre); border-width:1.5px; }
+.cal-mnum { font-family:'Space Mono',monospace; font-size:0.72rem; color:var(--text); }
+.cal-mcell.dim .cal-mnum { color:var(--muted); }
+.cal-mdot { margin-top:auto; font-family:'Space Mono',monospace; font-size:0.66rem; font-weight:700; color:var(--ochre); }
+/* overall log + day-detail summary */
+.cal-overall { margin-top:1.3rem; background:var(--surface); border:1.5px solid var(--card-line); border-top:3px solid var(--ochre); border-radius:9px; padding:1rem; }
+.cal-overall-lbl { font-family:'Space Mono',monospace; font-size:0.57rem; letter-spacing:0.2em; color:var(--ochre); text-transform:uppercase; margin-bottom:0.8rem; }
+.cal-og { display:grid; grid-template-columns:repeat(3,1fr); gap:0.75rem 0.5rem; }
+.cal-ostat b { display:block; font-family:'Jost',sans-serif; font-size:1.5rem; font-weight:700; color:var(--text); line-height:1; }
+.cal-ostat span { font-family:'Space Mono',monospace; font-size:0.52rem; letter-spacing:0.06em; color:var(--muted); text-transform:uppercase; }
+/* day detail runs */
+.cal-detail-run { background:var(--surface); border:1px solid var(--border); border-left:3px solid var(--moss); border-radius:7px; padding:0.7rem 0.85rem; margin-bottom:0.5rem; }
+.cal-dr-head { display:flex; justify-content:space-between; align-items:baseline; gap:0.5rem; margin-bottom:0.45rem; }
+.cal-dr-zone { font-family:'Jost',sans-serif; font-weight:600; font-size:0.95rem; color:var(--text); }
+.cal-dr-time { font-family:'Space Mono',monospace; font-size:0.6rem; color:var(--muted); white-space:nowrap; }
+.cal-dr-chips { display:flex; flex-wrap:wrap; gap:0.3rem; }
+.cal-dchip { background:var(--surface2); border:1px solid var(--border); border-radius:4px; padding:0.15rem 0.42rem; font-family:'Space Mono',monospace; font-size:0.6rem; color:var(--muted); }
+.cal-dchip b { color:var(--ochre); font-weight:700; }
 #team-bar { background:var(--block-bg); border-radius:8px; padding:0.6rem 0.95rem; margin-bottom:0.85rem; display:flex; align-items:center; justify-content:space-between; }
 .team-left { display:flex; align-items:baseline; gap:0.6rem; }
 .team-label { font-family:'Space Mono',monospace; font-size:0.55rem; letter-spacing:0.2em; color:var(--ochre); text-transform:uppercase; }
@@ -403,6 +459,7 @@ header { background:var(--header-bg); padding:0.9rem 1.25rem 0; position:sticky;
     </div>
     <div class="header-right">
       <span id="header-date"></span>
+      <button id="cal-btn" onclick="openCalendar()">▦ History</button>
       <button id="theme-btn" onclick="toggleTheme()">☀ Light</button>
     </div>
   </div>
@@ -610,6 +667,26 @@ header { background:var(--header-bg); padding:0.9rem 1.25rem 0; position:sticky;
     </div>
     <div id="log-list"><div id="log-empty">No entries yet</div></div>
 
+  </div>
+
+  <!-- ── CALENDAR / HISTORY ── -->
+  <div id="screen-calendar">
+    <div class="cal-top">
+      <div class="cal-title" id="cal-title">Field History</div>
+      <button class="cal-back" id="cal-back" onclick="calBack()">◂ Back</button>
+    </div>
+    <div id="cal-controls">
+      <div class="cal-modebar">
+        <button class="cal-mode" id="cal-mode-week" onclick="calSetMode('week')">Week</button>
+        <button class="cal-mode" id="cal-mode-month" onclick="calSetMode('month')">Month</button>
+      </div>
+      <div class="cal-nav">
+        <button onclick="calNav(-1)" aria-label="Previous">‹</button>
+        <span class="cal-period" id="cal-period"></span>
+        <button onclick="calNav(1)" aria-label="Next">›</button>
+      </div>
+    </div>
+    <div id="cal-body"></div>
   </div>
 </div>
 
@@ -1090,7 +1167,11 @@ function idbSet(key, val) {
     } catch (e) { res(); }
   });
 }
-function save() { idbSet('day', day); }
+let archive = {};   // date string → day object; every day is kept, never overwritten by the next
+function save() {
+  idbSet('day', day);
+  if (day && day.date) { archive[day.date] = day; idbSet('days', archive); }
+}
 function saveMembers() { idbSet('members', knownMembers); }
 function activeRun() { return day ? day.runs.find(r => r.status === 'active') || null : null; }
 function defaultTallies() {
@@ -1102,13 +1183,189 @@ function derivedContactCount(t) {
 
 
 // ── ROUTING ──
+let view = 'day';       // 'day' | 'calendar'
 function route() {
   const isToday = day && day.date === todayStr();
-  document.getElementById('screen-setup').classList.toggle('active', !isToday);
-  document.getElementById('screen-main').classList.toggle('active', isToday);
+  const cal = view === 'calendar';
+  document.getElementById('screen-calendar').classList.toggle('active', cal);
+  document.getElementById('screen-setup').classList.toggle('active', !cal && !isToday);
+  document.getElementById('screen-main').classList.toggle('active', !cal && isToday);
   document.getElementById('header-date').textContent = shortDay(todayStr());
-  if (!isToday) renderSetup();
+  if (cal) { document.getElementById('totals-bar').classList.remove('show'); renderCalendar(); }
+  else if (!isToday) renderSetup();
   else renderMain();
+}
+
+// ── CALENDAR / HISTORY ──
+// The archive keeps every day (keyed by date) so nothing is overwritten when a
+// new day starts. The all-time roll-up lives here only — never on the canvassing screen.
+let calMode = 'week';    // 'week' | 'month'
+let calAnchor = null;    // a date string inside the shown period
+let calSelected = null;  // date string of an opened day, or null for the grid
+
+function parseDay(str) { return new Date(str + 'T12:00:00'); }
+function fmtDay(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+
+function openCalendar() { view = 'calendar'; calSelected = null; calMode = 'week'; calAnchor = todayStr(); route(); }
+function closeCalendar() { view = 'day'; calSelected = null; route(); }
+function calBack() { if (calSelected) { calSelected = null; renderCalendar(); } else closeCalendar(); }
+function calSetMode(m) { calMode = m; calSelected = null; renderCalendar(); }
+function calSelectDay(ds) { if (archive[ds]) { calSelected = ds; renderCalendar(); } }
+function calNav(dir) {
+  const d = parseDay(calAnchor);
+  if (calMode === 'week') d.setDate(d.getDate() + dir * 7);
+  else d.setMonth(d.getMonth() + dir);
+  calAnchor = fmtDay(d);
+  renderCalendar();
+}
+
+// Sum one day's runs into the three headline metrics (+ the rest) for cards & roll-ups.
+function computeDayTotals(d) {
+  const totals = defaultTallies();
+  let premises = 0, minutes = 0;
+  (d?.runs || []).forEach(r => {
+    const t = r.tallies || defaultTallies();
+    Object.keys(totals).forEach(k => { totals[k] += (t[k] || 0); });
+    premises += (r.premisesFinal ?? r.premisesCount ?? 0);
+    if (r.startTime && r.stopTime) {
+      const [sh, sm] = r.startTime.split(':').map(Number);
+      const [eh, em] = r.stopTime.split(':').map(Number);
+      let mins = (eh * 60 + em) - (sh * 60 + sm); if (mins < 0) mins += 1440;
+      minutes += mins;
+    }
+  });
+  return { premises, contacts: derivedContactCount(totals), inspections: totals.inspection, minutes, runs: (d?.runs || []).length, tallies: totals };
+}
+
+function renderCalendar() {
+  const controls = document.getElementById('cal-controls');
+  const back = document.getElementById('cal-back');
+  const title = document.getElementById('cal-title');
+  if (calSelected) {
+    controls.style.display = 'none';
+    title.textContent = niceDate(calSelected);
+    back.textContent = '◂ Calendar';
+    document.getElementById('cal-body').innerHTML = renderDayDetail(calSelected);
+    return;
+  }
+  controls.style.display = '';
+  title.textContent = 'Field History';
+  back.textContent = '◂ Back';
+  document.getElementById('cal-mode-week').classList.toggle('on', calMode === 'week');
+  document.getElementById('cal-mode-month').classList.toggle('on', calMode === 'month');
+  document.getElementById('cal-body').innerHTML =
+    (calMode === 'week' ? renderCalWeek() : renderCalMonth()) + renderOverall();
+}
+
+const CAL_MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const CAL_MON_FULL = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const CAL_DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+function renderCalWeek() {
+  const anchor = parseDay(calAnchor);
+  const sun = new Date(anchor); sun.setDate(anchor.getDate() - anchor.getDay());
+  const days = []; for (let i = 0; i < 7; i++) { const d = new Date(sun); d.setDate(sun.getDate() + i); days.push(d); }
+  document.getElementById('cal-period').textContent =
+    `${CAL_MON[days[0].getMonth()]} ${days[0].getDate()} – ${CAL_MON[days[6].getMonth()]} ${days[6].getDate()}`;
+  const today = todayStr();
+  const rows = days.map(d => {
+    const ds = fmtDay(d), dObj = archive[ds], isToday = ds === today, dow = CAL_DOW[d.getDay()];
+    if (!dObj) {
+      return `<div class="cal-wcell${isToday ? ' today' : ''}">
+        <div class="cal-wdate"><span class="cal-wdow">${dow}</span><span class="cal-wnum">${d.getDate()}</span></div>
+        <div class="cal-none">${isToday ? 'Today — no log yet' : 'No log'}</div>
+      </div>`;
+    }
+    const tot = computeDayTotals(dObj);
+    return `<div class="cal-wcell has${isToday ? ' today' : ''}" onclick="calSelectDay('${ds}')">
+      <div class="cal-wdate"><span class="cal-wdow">${dow}</span><span class="cal-wnum">${d.getDate()}</span></div>
+      <div class="cal-wtot">
+        <div class="cal-stat"><b>${tot.premises}</b><span>Prem</span></div>
+        <div class="cal-stat"><b>${tot.contacts}</b><span>Cont</span></div>
+        <div class="cal-stat"><b>${tot.inspections}</b><span>Insp</span></div>
+      </div>
+    </div>`;
+  }).join('');
+  return `<div class="cal-week">${rows}</div>`;
+}
+
+function renderCalMonth() {
+  const anchor = parseDay(calAnchor);
+  const y = anchor.getFullYear(), mo = anchor.getMonth();
+  const startPad = new Date(y, mo, 1).getDay();
+  const daysInMonth = new Date(y, mo + 1, 0).getDate();
+  document.getElementById('cal-period').textContent = `${CAL_MON_FULL[mo]} ${y}`;
+  const today = todayStr();
+  const cells = [];
+  for (let i = 0; i < startPad; i++) cells.push('<div class="cal-mcell blank"></div>');
+  for (let dn = 1; dn <= daysInMonth; dn++) {
+    const ds = fmtDay(new Date(y, mo, dn)), dObj = archive[ds], isToday = ds === today;
+    if (dObj) {
+      const tot = computeDayTotals(dObj);
+      cells.push(`<div class="cal-mcell has${isToday ? ' today' : ''}" onclick="calSelectDay('${ds}')"><span class="cal-mnum">${dn}</span><span class="cal-mdot">${tot.premises || '·'}</span></div>`);
+    } else {
+      cells.push(`<div class="cal-mcell dim${isToday ? ' today' : ''}"><span class="cal-mnum">${dn}</span></div>`);
+    }
+  }
+  const dow = ['S','M','T','W','T','F','S'].map(x => `<span>${x}</span>`).join('');
+  return `<div class="cal-dow">${dow}</div><div class="cal-month">${cells.join('')}</div>`;
+}
+
+function renderOverall() {
+  const keys = Object.keys(archive).filter(k => archive[k] && archive[k].runs);
+  let premises = 0, contacts = 0, inspections = 0, minutes = 0, runs = 0;
+  keys.forEach(k => { const t = computeDayTotals(archive[k]); premises += t.premises; contacts += t.contacts; inspections += t.inspections; minutes += t.minutes; runs += t.runs; });
+  const hrs = Math.floor(minutes / 60), mn = minutes % 60;
+  const timeStr = hrs > 0 ? `${hrs}h ${mn}m` : `${mn}m`;
+  return `<div class="cal-overall">
+    <div class="cal-overall-lbl">Overall · All Time</div>
+    <div class="cal-og">
+      <div class="cal-ostat"><b>${keys.length}</b><span>Days</span></div>
+      <div class="cal-ostat"><b>${premises}</b><span>Premises</span></div>
+      <div class="cal-ostat"><b>${contacts}</b><span>Contacts</span></div>
+      <div class="cal-ostat"><b>${inspections}</b><span>Inspections</span></div>
+      <div class="cal-ostat"><b>${runs}</b><span>Runs</span></div>
+      <div class="cal-ostat"><b>${timeStr}</b><span>Field Time</span></div>
+    </div>
+  </div>`;
+}
+
+function renderDayDetail(ds) {
+  const d = archive[ds];
+  if (!d) return '<div class="cal-none">No log for this day.</div>';
+  const tot = computeDayTotals(d);
+  const team = (d.teamComp || []).join(' · ') || '—';
+  const runsHtml = (d.runs || []).map(r => {
+    const t = r.tallies || defaultTallies();
+    const zone = (r.coverageZone && r.coverageZone.length)
+      ? r.coverageZone.map(z => `${z.street || ''} ${z.blockRange || ''}`.trim()).filter(Boolean).join(', ')
+      : (r.street || 'Run');
+    const prem = r.premisesFinal ?? r.premisesCount ?? 0;
+    const time = r.startTime ? `${fmtTime(r.startTime)}${r.stopTime ? '–' + fmtTime(r.stopTime) : ''}` : '';
+    const chips = [
+      ['Prem', prem], ['Cont', derivedContactCount(t)], ['Insp', t.inspection],
+      t.refused ? ['Refused', t.refused] : null,
+      t.ss ? ['Handed', t.ss] : null,
+      t.vacantLot ? ['Vac.Lot', t.vacantLot] : null,
+      t.vacantPremises ? ['Vac.Prem', t.vacantPremises] : null,
+      t.mapCallElim ? ['MC Elim', t.mapCallElim] : null,
+      t.newConstruction ? ['New Const', t.newConstruction] : null,
+    ].filter(Boolean).map(([l, v]) => `<span class="cal-dchip">${l} <b>${v}</b></span>`).join('');
+    return `<div class="cal-detail-run">
+      <div class="cal-dr-head"><span class="cal-dr-zone">${zone || 'Run'}</span><span class="cal-dr-time">${time}</span></div>
+      <div class="cal-dr-chips">${chips}</div>
+    </div>`;
+  }).join('') || '<div class="cal-none">No runs logged this day.</div>';
+  return `<div class="cal-overall">
+      <div class="cal-overall-lbl">Day Totals · ${team}</div>
+      <div class="cal-og">
+        <div class="cal-ostat"><b>${tot.premises}</b><span>Premises</span></div>
+        <div class="cal-ostat"><b>${tot.contacts}</b><span>Contacts</span></div>
+        <div class="cal-ostat"><b>${tot.inspections}</b><span>Inspections</span></div>
+      </div>
+    </div>
+    <div style="height:0.9rem"></div>
+    ${runsHtml}`;
 }
 
 // ── SETUP ──
@@ -2035,6 +2292,10 @@ function migrateDayTallies() {
     if (t !== undefined) isDark = (t === 'dark');
     if (Array.isArray(m)) knownMembers = m;
     if (d !== undefined && d !== null) day = d;
+    // Load the permanent day archive; seed it from any pre-existing single day (first run after this update).
+    const a = await idbGet('days');
+    if (a && typeof a === 'object') archive = a;
+    if (day && day.date && !archive[day.date]) { archive[day.date] = day; await idbSet('days', archive); }
   } catch (e) { /* defaults already set above */ }
 
   migrateDayTallies();
