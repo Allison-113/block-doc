@@ -1019,10 +1019,21 @@ function lastRunStreet() {
   return firstRunStreet() || gpsStreet || '';
 }
 
+// Street-name abbreviations — ported from Field Cam's shared list so GPS-pulled
+// names read the same across her tools (Street→St, South→S., Avenue→Ave, …).
+const STREET_ABBR = [
+  [/\bNorthwest\b/gi, 'NW'], [/\bNortheast\b/gi, 'NE'], [/\bSouthwest\b/gi, 'SW'], [/\bSoutheast\b/gi, 'SE'],
+  [/\bNorth\b/gi, 'N.'],     [/\bSouth\b/gi, 'S.'],     [/\bEast\b/gi, 'E.'],      [/\bWest\b/gi, 'W.'],
+  [/\bBoulevard\b/gi, 'Blvd'], [/\bAvenue\b/gi, 'Ave'], [/\bStreet\b/gi, 'St'],    [/\bDrive\b/gi, 'Dr'],
+  [/\bCourt\b/gi, 'Ct'],       [/\bPlace\b/gi, 'Pl'],   [/\bLane\b/gi, 'Ln'],      [/\bRoad\b/gi, 'Rd'],
+  [/\bCircle\b/gi, 'Cir'],     [/\bHighway\b/gi, 'Hwy'],[/\bParkway\b/gi, 'Pkwy'], [/\bTerrace\b/gi, 'Ter'],
+  [/\bTrail\b/gi, 'Trl'],      [/\bWay\b/gi, 'Way'],    [/\bSquare\b/gi, 'Sq'],
+];
 function normalizeStreetName(street) {
-  const s = String(street || '').trim();
+  let s = String(street || '').trim();
   if (!s) return '';
-  return s.replace(/\bStreet\b/gi, 'St').replace(/\s+/g, ' ').trim();
+  for (const [pattern, replacement] of STREET_ABBR) s = s.replace(pattern, replacement);
+  return s.replace(/\s+/g, ' ').trim();
 }
 function parseBlockHundreds(blockRange) {
   const m = String(blockRange || '').trim().match(/^(\d{1,4})/);
@@ -1560,7 +1571,7 @@ function fetchGpsStreet(cb) {
       const { latitude: lat, longitude: lon } = pos.coords;
       const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`, { headers: { 'Accept-Language': 'en' } });
       const d = await r.json();
-      const road = d.address?.road || d.address?.street || '';
+      const road = normalizeStreetName(d.address?.road || d.address?.street || '');
       if (road) { gpsStreet = road; if (cb) cb(road); }
     } catch(e) {}
   }, ()=>{}, { enableHighAccuracy: true, timeout: 8000 });
@@ -1608,9 +1619,9 @@ function openRunModal() {
     if (!gps || !zonePairs[0]) return;
     if (zonePairs[0].street !== lastStreet) return;            // user edited it — leave alone
     if (normalizeStreetName(zonePairs[0].street) === gps) return; // same street — nothing to change
-    zonePairs[0].street = road;
+    zonePairs[0].street = gps;
     const input = document.querySelector('#zp-0 .form-input');
-    if (input) input.value = road;
+    if (input) input.value = gps;
   });
 }
 function renderZonePairs() {
