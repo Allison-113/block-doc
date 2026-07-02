@@ -353,8 +353,20 @@ header { background:var(--header-bg); padding:0.9rem 1.25rem 0; position:sticky;
 
 #totals-bar { display:none; position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:480px; background:linear-gradient(to top, var(--surface) 72%, transparent); border-top:2px solid var(--ochre); padding:0.65rem 1.25rem 1.3rem; z-index:80; }
 #totals-bar.show { display:block; }
-.totals-lbl { font-family:'Space Mono',monospace; font-size:0.55rem; letter-spacing:0.2em; color:var(--muted); text-transform:uppercase; margin-bottom:0.45rem; }
+.totals-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:0.45rem; }
+.totals-lbl { font-family:'Space Mono',monospace; font-size:0.55rem; letter-spacing:0.2em; color:var(--muted); text-transform:uppercase; }
+.rates-trigger { background:none; border:1px solid var(--border2); border-radius:4px; color:var(--muted); font-family:'Space Mono',monospace; font-size:0.56rem; letter-spacing:0.1em; text-transform:uppercase; padding:0.2rem 0.5rem; cursor:pointer; transition:all .15s; }
+.rates-trigger:hover, .rates-trigger:active { border-color:var(--ochre); color:var(--ochre); }
 .totals-chips { display:flex; flex-wrap:wrap; gap:0.3rem; }
+/* rates modal — conversion funnel */
+.rates-funnel { display:grid; gap:0.6rem; }
+.rate-row { background:var(--surface2); border:1px solid var(--border); border-left:3px solid var(--moss); border-radius:8px; padding:0.75rem 0.9rem; display:flex; align-items:center; justify-content:space-between; gap:0.75rem; }
+.rate-info { min-width:0; }
+.rate-label { font-family:'Space Mono',monospace; font-size:0.62rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin-bottom:0.3rem; }
+.rate-sub { font-family:'Jost',sans-serif; font-size:0.85rem; color:var(--text); }
+.rate-pct { font-family:'Space Mono',monospace; font-weight:700; font-size:1.9rem; color:var(--ochre); line-height:1; flex-shrink:0; }
+.rate-pct.na { color:var(--muted); font-size:1.2rem; }
+.rates-empty { font-family:'Jost',sans-serif; font-style:italic; color:var(--muted); font-size:0.9rem; padding:1rem 0.2rem; text-align:center; }
 .tot-chip { background:var(--surface2); border:1px solid var(--border2); border-radius:4px; padding:0.22rem 0.55rem; font-family:'Space Mono',monospace; font-size:0.7rem; display:flex; align-items:center; gap:0.3rem; }
 .tot-n { font-weight:700; color:var(--text); }
 .tot-l { color:var(--muted); }
@@ -709,7 +721,10 @@ header { background:var(--header-bg); padding:0.9rem 1.25rem 0; position:sticky;
 
 <!-- Totals Bar -->
 <div id="totals-bar">
-  <div class="totals-lbl">Running Totals</div>
+  <div class="totals-head">
+    <div class="totals-lbl">Running Totals</div>
+    <button class="rates-trigger" onclick="openRatesModal()">▥ Rates</button>
+  </div>
   <div class="totals-chips" id="totals-chips"></div>
 </div>
 
@@ -871,6 +886,24 @@ header { background:var(--header-bg); padding:0.9rem 1.25rem 0; position:sticky;
       <button class="sheet-cancel" onclick="closeModal('modal-appt')">Cancel</button>
       <button class="sheet-cancel appt-delete" id="appt-delete-btn" style="display:none" onclick="deleteAppt()">Delete</button>
       <button class="sheet-primary" id="appt-primary-btn" style="background:var(--ochre);color:var(--block-bg)" onclick="confirmAppt()">Log Appointment</button>
+    </div>
+  </div>
+</div>
+
+<!-- Rates Modal (deliberate, off the main screen) -->
+<div id="modal-rates" class="modal-overlay">
+  <div class="modal-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <div class="sheet-eyebrow">Conversion</div>
+      <div class="sheet-title">Rates</div>
+    </div>
+    <div class="sheet-body">
+      <div class="rates-funnel" id="rates-funnel"></div>
+      <div class="rates-empty" id="rates-empty" style="display:none">Log some premises to see rates.</div>
+    </div>
+    <div class="sheet-foot">
+      <button class="sheet-primary" style="flex:1" onclick="closeModal('modal-rates')">Done</button>
     </div>
   </div>
 </div>
@@ -2222,15 +2255,17 @@ function renderTotals() {
   bar.classList.add('show');
 
   const totalContacts = derivedContactCount(totals);
+  // Vacancies (lot + premises) are still counted separately per run — only the
+  // running-totals bar collapses them into one "Vacant" chip, kept at the bottom.
+  const totalVacant = (totals.vacantLot || 0) + (totals.vacantPremises || 0);
   const chips = [
     { k:'contact',        l:'Contacts', cls:'c-cont', v:totalContacts },
     { k:'inspection',     l:'Insp',     cls:'c-insp', v:totals.inspection },
     { k:'refused',        l:'Refused',  cls:'',       v:totals.refused },
     { k:'ss',             l:'Handed',   cls:'',       v:totals.ss },
-    { k:'vacantLot',      l:'Vac.Lot',  cls:'',       v:totals.vacantLot },
-    { k:'vacantPremises', l:'Vac.Prem', cls:'',       v:totals.vacantPremises },
     { k:'mapCallElim',    l:'MC Elim',  cls:'',       v:totals.mapCallElim },
     { k:'newConstruction',l:'New Const',cls:'',       v:totals.newConstruction },
+    { k:'vacant',         l:'Vacant',   cls:'',       v:totalVacant },
   ];
   document.getElementById('totals-chips').innerHTML =
     (totalPremises > 0 ? `<div class="tot-chip c-prem"><span class="tot-n">${totalPremises}</span><span class="tot-l">Prem</span></div>` : '') +
@@ -2243,6 +2278,30 @@ function renderTotals() {
       </div>`).join('') +
     (appts ? `<div class="tot-chip"><span class="tot-n">${appts}</span><span class="tot-l">Appt</span></div>` : '') +
     (lunches ? `<div class="tot-chip"><span class="tot-n">${lunches}</span><span class="tot-l">Break</span></div>` : '');
+}
+
+// ── RATES (conversion funnel — deliberate modal, kept off the main screen) ──
+function ratePct(num, den) { return den > 0 ? Math.round((num / den) * 100) : null; }
+function openRatesModal() { renderRates(); document.getElementById('modal-rates').classList.add('open'); }
+function renderRates() {
+  const { premises, contacts, inspections } = computeDayTotals(day);
+  const rows = [
+    { label:'Premise → Contact',    num:contacts,    den:premises, unit:'premises', accent:'var(--moss)' },
+    { label:'Premise → Inspection', num:inspections, den:premises, unit:'premises', accent:'var(--danger)' },
+    { label:'Contact → Inspection', num:inspections, den:contacts, unit:'contacts',  accent:'var(--ochre)' },
+  ];
+  const anyData = (premises + contacts + inspections) > 0;
+  document.getElementById('rates-empty').style.display = anyData ? 'none' : '';
+  document.getElementById('rates-funnel').innerHTML = !anyData ? '' : rows.map(r => {
+    const pct = ratePct(r.num, r.den);
+    return `<div class="rate-row" style="border-left-color:${r.accent}">
+      <div class="rate-info">
+        <div class="rate-label">${r.label}</div>
+        <div class="rate-sub">${r.num} of ${r.den} ${r.unit}</div>
+      </div>
+      <div class="rate-pct ${pct == null ? 'na' : ''}">${pct == null ? '—' : pct + '%'}</div>
+    </div>`;
+  }).join('');
 }
 
 // ── CLEAR ──
