@@ -332,6 +332,23 @@ header { background:var(--header-bg); padding:0.9rem 1.25rem 0; position:sticky;
 .bc-type { font-family:'Space Mono',monospace; font-size:0.54rem; letter-spacing:0.16em; color:var(--muted); text-transform:uppercase; margin-bottom:0.12rem; }
 .bc-main { font-family:'Jost',sans-serif; font-size:0.9rem; font-weight:500; color:var(--text); }
 .bc-sub { font-family:'Space Mono',monospace; font-size:0.65rem; color:var(--muted); margin-top:0.1rem; }
+/* appointment card: header actions + inline result marking */
+.appt-card .bc-body { min-width:0; }
+.bc-appt-top { display:flex; align-items:center; justify-content:space-between; gap:0.5rem; }
+.bc-actions { display:flex; align-items:center; gap:0.35rem; flex-shrink:0; }
+.bc-qm-row { display:flex; gap:0.4rem; margin-top:0.5rem; }
+.bc-qm { flex:1; padding:0.5rem 0.4rem; border-radius:6px; font-family:'Space Mono',monospace; font-size:0.66rem; letter-spacing:0.04em; font-weight:700; text-transform:uppercase; cursor:pointer; background:var(--surface2); transition:all .12s; -webkit-tap-highlight-color:transparent; }
+.bc-qm.done { border:1px solid var(--moss); color:var(--moss); }
+.bc-qm.done.on { background:var(--moss); color:#fff; }
+.bc-qm.miss { border:1px solid var(--danger); color:var(--danger); }
+.bc-qm.miss.on { background:var(--danger); color:#fff; }
+/* result segmented control in the appointment sheet */
+.appt-result-seg { display:flex; gap:0.4rem; }
+.ars-btn { flex:1; padding:0.6rem 0.35rem; border:1px solid var(--border2); border-radius:6px; background:var(--surface2); color:var(--muted); font-family:'Space Mono',monospace; font-size:0.62rem; letter-spacing:0.03em; text-transform:uppercase; cursor:pointer; transition:all .12s; line-height:1.2; }
+.ars-btn[data-res="Inspection Done"].on { background:var(--moss); border-color:var(--moss); color:#fff; }
+.ars-btn[data-res="Missed"].on { background:var(--danger); border-color:var(--danger); color:#fff; }
+.ars-btn[data-res=""].on { background:var(--block-bg); border-color:var(--block-bg); color:var(--block-ink); }
+.appt-delete { border-color:var(--danger) !important; color:var(--danger) !important; }
 #log-empty { text-align:center; padding:2.5rem 0; color:var(--muted); font-style:italic; font-family:'Jost',sans-serif; font-size:1rem; }
 
 #totals-bar { display:none; position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:480px; background:linear-gradient(to top, var(--surface) 72%, transparent); border-top:2px solid var(--ochre); padding:0.65rem 1.25rem 1.3rem; z-index:80; }
@@ -830,7 +847,7 @@ header { background:var(--header-bg); padding:0.9rem 1.25rem 0; position:sticky;
     <div class="sheet-handle"></div>
     <div class="sheet-head">
       <div class="sheet-eyebrow">Break</div>
-      <div class="sheet-title">Appointment</div>
+      <div class="sheet-title" id="appt-modal-title">Appointment</div>
     </div>
     <div class="sheet-body">
       <div class="form-group">
@@ -841,10 +858,19 @@ header { background:var(--header-bg); padding:0.9rem 1.25rem 0; position:sticky;
         <label class="form-label" for="appt-addr">Address (optional)</label>
         <input type="text" class="form-input" id="appt-addr" placeholder="123 Oak St" autocomplete="off">
       </div>
+      <div class="form-group">
+        <label class="form-label">Result</label>
+        <div class="appt-result-seg" id="appt-result-seg">
+          <button type="button" class="ars-btn on" data-res="" onclick="setApptResult('')">Pending</button>
+          <button type="button" class="ars-btn" data-res="Inspection Done" onclick="setApptResult('Inspection Done')">Inspection Done</button>
+          <button type="button" class="ars-btn" data-res="Missed" onclick="setApptResult('Missed')">Missed</button>
+        </div>
+      </div>
     </div>
     <div class="sheet-foot">
       <button class="sheet-cancel" onclick="closeModal('modal-appt')">Cancel</button>
-      <button class="sheet-primary" style="background:var(--ochre);color:var(--block-bg)" onclick="confirmAppt()">Log Appointment</button>
+      <button class="sheet-cancel appt-delete" id="appt-delete-btn" style="display:none" onclick="deleteAppt()">Delete</button>
+      <button class="sheet-primary" id="appt-primary-btn" style="background:var(--ochre);color:var(--block-bg)" onclick="confirmAppt()">Log Appointment</button>
     </div>
   </div>
 </div>
@@ -1004,17 +1030,19 @@ function blurKeyboard() {
   const el = document.activeElement;
   if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) el.blur();
 }
+// All prefill getters return the ABBREVIATED form, so any field that seeds itself
+// from a prior street shows the short name even for streets stored before this fix.
 function firstRunStreet() {
-  return day?.runs?.[0]?.coverageZone?.[0]?.street || '';
+  return normalizeStreetName(day?.runs?.[0]?.coverageZone?.[0]?.street || '');
 }
 function currentRunStreet() {
-  return activeRun()?.coverageZone?.[0]?.street || firstRunStreet() || gpsStreet || '';
+  return normalizeStreetName(activeRun()?.coverageZone?.[0]?.street || '') || firstRunStreet() || gpsStreet || '';
 }
 function lastRunStreet() {
   const runs = day?.runs || [];
   for (let i = runs.length - 1; i >= 0; i--) {
     const street = runs[i]?.coverageZone?.[0]?.street;
-    if (street) return street;
+    if (street) return normalizeStreetName(street);
   }
   return firstRunStreet() || gpsStreet || '';
 }
@@ -1440,8 +1468,8 @@ function startDay() {
   if (!setupSel.length) return;
   day = {
     date: todayStr(), teamComp: [...setupSel], compChanges: [], runs: [],
-    appointments: setupAppts.map(a=>({...a})),
-    events: setupAppts.map(a=>({ type:'appointment', time:a.time, address:a.address }))
+    appointments: setupAppts.map(a=>({...a, result: a.result || ''})),
+    events: setupAppts.map(a=>({ type:'appointment', id:a.id, time:a.time, address:a.address, result:a.result || '' }))
   };
   setupAppts = []; save(); route();
 }
@@ -1544,7 +1572,7 @@ function onAsiCustom() {
 function confirmAddStreet() {
   const run = activeRun(); if (!run) return;
   const streetInput = document.getElementById('asi-street-name').value.trim();
-  const street = streetInput || currentRunStreet();
+  const street = normalizeStreetName(streetInput || currentRunStreet());
   if (!street) return;
   run.coverageZone.push({ street, blockRange: asiBlockRange });
   save();
@@ -1668,7 +1696,9 @@ function onZoneCustom(i, val) {
 function addZonePair() { const defaultStreet = zonePairs[0]?.street || lastRunStreet(); zonePairs.push({ street: defaultStreet, blockRange: '100s' }); renderZonePairs(); }
 function rmZone(i) { zonePairs.splice(i, 1); renderZonePairs(); }
 function confirmStartRun() {
-  const valid = zonePairs.filter(z => z.street.trim());
+  const valid = zonePairs
+    .filter(z => z.street.trim())
+    .map(z => ({ street: normalizeStreetName(z.street), blockRange: z.blockRange }));
   if (!valid.length) return;
   const t = document.getElementById('run-start-time').value || nowTime();
   const pcRaw = document.getElementById('run-premises-input').value;
@@ -1789,7 +1819,7 @@ function openEditRunModal(runId = null) {
 function saveEditedRun() {
   const run = day?.runs?.find(r => r.id === editingRunId);
   if (!run) return;
-  const validZones = editZonePairs.map(z => ({ street: String(z.street || '').trim(), blockRange: String(z.blockRange || '').trim() || '100s' })).filter(z => z.street);
+  const validZones = editZonePairs.map(z => ({ street: normalizeStreetName(z.street), blockRange: String(z.blockRange || '').trim() || '100s' })).filter(z => z.street);
   if (!validZones.length) return;
   run.coverageZone = validZones;
   run.startTime = document.getElementById('edit-run-start-time').value || run.startTime || nowTime();
@@ -1885,17 +1915,58 @@ function confirmStopRun() {
 }
 
 // ── APPOINTMENT ──
-function openApptModal() {
-  document.getElementById('appt-time').value = nowTime();
-  document.getElementById('appt-addr').value = '';
+let editingApptId = null;   // set while the sheet is editing an existing appointment
+let apptResultSel = '';     // currently-selected result in the sheet
+function apptEvent(id) { return day?.events?.find(e => e.type === 'appointment' && e.id === id) || null; }
+function setApptResult(r) {
+  apptResultSel = r;
+  document.querySelectorAll('#appt-result-seg .ars-btn').forEach(b => b.classList.toggle('on', b.dataset.res === r));
+}
+function openApptModal(editId) {
+  editingApptId = editId || null;
+  const ev = editingApptId ? apptEvent(editingApptId) : null;
+  document.getElementById('appt-time').value = ev ? ev.time : nowTime();
+  document.getElementById('appt-addr').value = ev ? (ev.address || '') : '';
+  setApptResult(ev ? (ev.result || '') : '');
+  document.getElementById('appt-modal-title').textContent = ev ? 'Edit Appointment' : 'Appointment';
+  document.getElementById('appt-primary-btn').textContent = ev ? 'Save' : 'Log Appointment';
+  document.getElementById('appt-delete-btn').style.display = ev ? '' : 'none';
   document.getElementById('modal-appt').classList.add('open');
 }
 function confirmAppt() {
   const t = document.getElementById('appt-time').value || nowTime();
   const addr = document.getElementById('appt-addr').value.trim();
-  day.appointments.push({ id: Date.now(), time: t, address: addr });
-  day.events.push({ type: 'appointment', time: t, address: addr });
+  if (editingApptId) {
+    const ev = apptEvent(editingApptId);
+    if (ev) { ev.time = t; ev.address = addr; ev.result = apptResultSel; }
+    const ap = day.appointments?.find(a => a.id === editingApptId);
+    if (ap) { ap.time = t; ap.address = addr; ap.result = apptResultSel; }
+  } else {
+    const id = Date.now();
+    day.appointments.push({ id, time: t, address: addr, result: apptResultSel });
+    day.events.push({ type: 'appointment', id, time: t, address: addr, result: apptResultSel });
+  }
+  editingApptId = null;
   save(); closeModal('modal-appt'); renderLog(); renderTotals();
+}
+function deleteAppt() { if (editingApptId) { const id = editingApptId; editingApptId = null; closeModal('modal-appt'); removeAppt(id); } }
+function deleteApptById(id) {
+  const ev = apptEvent(id);
+  if (!confirm(`Delete the ${fmtTime(ev?.time)} appointment? This cannot be undone.`)) return;
+  removeAppt(id);
+}
+function removeAppt(id) {
+  day.events = day.events.filter(e => !(e.type === 'appointment' && e.id === id));
+  if (day.appointments) day.appointments = day.appointments.filter(a => a.id !== id);
+  save(); renderLog(); renderTotals();
+}
+// Fast field marking straight from the log card — tap the same result again to clear it.
+function quickApptResult(id, r) {
+  const ev = apptEvent(id); if (!ev) return;
+  ev.result = (ev.result === r) ? '' : r;
+  const ap = day.appointments?.find(a => a.id === id);
+  if (ap) ap.result = ev.result;
+  save(); renderLog(); renderTotals();
 }
 
 // ── LUNCH / BREAK ──
@@ -1988,7 +2059,7 @@ function renderLog() {
 
   const timeline = [];
   day.runs.forEach(run => { timeline.push({ type: 'run', time: run.startTime || '00:00', run }); });
-  day.events.filter(e => e.type === 'appointment').forEach(ev => { timeline.push({ type: 'appointment', time: ev.time, ev }); });
+  day.events.filter(e => e.type === 'appointment').forEach(ev => { if (!ev.id) ev.id = Date.now() + Math.floor(Math.random()*1000); timeline.push({ type: 'appointment', time: ev.time, ev }); });
   day.events.filter(e => e.type === 'lunch').forEach(ev => { timeline.push({ type: 'lunch', time: ev.time, ev }); });
   day.events.filter(e => e.type === 'team-change').forEach(ev => { timeline.push({ type: 'team', time: ev.time, ev }); });
 
@@ -2072,12 +2143,24 @@ function renderRunLogCard(run) {
 }
 
 function renderBreakCard(type, ev) {
-  return `<div class="break-card">
+  const res = ev.result || '';
+  const done = res === 'Inspection Done', miss = res === 'Missed';
+  return `<div class="break-card appt-card">
     <div class="bc-pip ${type}"></div>
     <div class="bc-time">${fmtTime(ev.time)}</div>
     <div class="bc-body">
-      <div class="bc-type">Appointment</div>
-      <div class="bc-main">${ev.address || 'Appointment'}</div>
+      <div class="bc-appt-top">
+        <div class="bc-type">Appointment</div>
+        <div class="bc-actions">
+          <button class="rlc-edit" onclick="openApptModal(${ev.id})">Edit</button>
+          <button class="rlc-del" onclick="deleteApptById(${ev.id})">Delete</button>
+        </div>
+      </div>
+      <div class="bc-main">${esc(ev.address || 'Appointment')}</div>
+      <div class="bc-qm-row">
+        <button class="bc-qm done ${done?'on':''}" onclick="quickApptResult(${ev.id},'Inspection Done')">✓ Inspection Done</button>
+        <button class="bc-qm miss ${miss?'on':''}" onclick="quickApptResult(${ev.id},'Missed')">✗ Missed</button>
+      </div>
     </div>
   </div>`;
 }
