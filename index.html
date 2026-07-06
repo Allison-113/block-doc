@@ -180,6 +180,40 @@ header { background:var(--header-bg); padding:0.9rem 1.25rem 0; position:sticky;
 .cal-dr-chips { display:flex; flex-wrap:wrap; gap:0.3rem; }
 .cal-dchip { background:var(--surface2); border:1px solid var(--border); border-radius:4px; padding:0.15rem 0.42rem; font-family:'Space Mono',monospace; font-size:0.6rem; color:var(--muted); }
 .cal-dchip b { color:var(--ochre); font-weight:700; }
+/* day-detail: appointments & breaks */
+.cal-appts { display:flex; flex-direction:column; gap:0.4rem; margin-top:0.55rem; }
+.cal-appt { display:flex; align-items:center; gap:0.6rem; background:var(--surface); border:1px solid var(--border); border-left:3px solid var(--muted); border-radius:6px; padding:0.5rem 0.7rem; }
+.cal-appt.done { border-left-color:var(--moss); }
+.cal-appt.missed { border-left-color:var(--danger); }
+.cal-appt.pending { border-left-color:var(--ochre); }
+.cal-appt.lunch { border-left-color:var(--rust); }
+.cal-appt-time { font-family:'Space Mono',monospace; font-size:0.62rem; color:var(--muted); white-space:nowrap; min-width:3.6rem; }
+.cal-appt-addr { font-family:'Jost',sans-serif; font-size:0.9rem; color:var(--text); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.cal-appt-res { font-family:'Space Mono',monospace; font-size:0.52rem; letter-spacing:0.08em; text-transform:uppercase; padding:0.15rem 0.4rem; border-radius:4px; white-space:nowrap; }
+.cal-appt-res.done { background:var(--moss); color:#fff; }
+.cal-appt-res.missed { background:var(--danger); color:#fff; }
+.cal-appt-res.pending { color:var(--ochre); border:1px solid var(--ochre); }
+.cal-appt-res.lunch { color:var(--rust); border:1px solid var(--rust); }
+/* stats: best time-of-day */
+.cal-tod .tod-takeaway { font-family:'Jost',sans-serif; font-size:0.9rem; color:var(--text); margin-bottom:0.85rem; }
+.cal-tod .tod-takeaway b { color:var(--ochre); font-weight:700; }
+.tod-grid { display:flex; flex-direction:column; gap:0.7rem; }
+.tod-row { display:grid; grid-template-columns:4.2rem 1fr; gap:0.6rem; align-items:center; }
+.tod-when b { display:block; font-family:'Jost',sans-serif; font-size:0.82rem; font-weight:600; color:var(--text); line-height:1.1; }
+.tod-when span { font-family:'Space Mono',monospace; font-size:0.52rem; color:var(--muted); }
+.tod-bars { display:flex; flex-direction:column; gap:0.28rem; min-width:0; }
+.tod-bar { display:flex; align-items:center; gap:0.45rem; }
+.tod-bar-lbl { font-family:'Space Mono',monospace; font-size:0.5rem; letter-spacing:0.06em; color:var(--muted); text-transform:uppercase; width:2rem; flex-shrink:0; }
+.tod-track { flex:1; height:8px; background:var(--surface2); border-radius:4px; overflow:hidden; min-width:0; }
+.tod-fill { display:block; height:100%; border-radius:4px; }
+.tod-fill.c { background:var(--moss); }
+.tod-fill.i { background:var(--danger); }
+.tod-n { font-family:'Space Mono',monospace; font-size:0.62rem; font-weight:700; color:var(--text); width:1.6rem; text-align:right; flex-shrink:0; }
+.tod-foot { font-family:'Space Mono',monospace; font-size:0.5rem; letter-spacing:0.04em; color:var(--muted); margin-top:0.8rem; font-style:italic; }
+.cal-agg-empty .cal-none { padding:0.3rem 0; }
+/* rates footnotes */
+.rates-note { margin-top:0.4rem; font-family:'Space Mono',monospace; font-size:0.58rem; line-height:1.5; color:var(--muted); }
+.rates-note div { margin-top:0.15rem; }
 #team-bar { background:var(--block-bg); border-radius:8px; padding:0.6rem 0.95rem; margin-bottom:0.85rem; display:flex; align-items:center; justify-content:space-between; }
 .team-left { display:flex; align-items:baseline; gap:0.6rem; }
 .team-label { font-family:'Space Mono',monospace; font-size:0.55rem; letter-spacing:0.2em; color:var(--ochre); text-transform:uppercase; }
@@ -404,17 +438,21 @@ header { background:var(--header-bg); padding:0.9rem 1.25rem 0; position:sticky;
 .edit-card-head { display:flex; align-items:baseline; justify-content:space-between; gap:0.5rem; margin-bottom:0.6rem; padding-bottom:0.5rem; border-bottom:1px solid var(--border); }
 .edit-card-title { font-family:'Space Mono',monospace; font-size:0.56rem; letter-spacing:0.18em; color:var(--ochre-dim); text-transform:uppercase; }
 .edit-card-note { font-family:'Jost',sans-serif; font-style:italic; font-size:0.82rem; color:var(--muted); }
-.edit-grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:0.55rem; }
-.edit-grid-2.compact .form-group { margin-bottom:0; }
-.edit-tally-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.45rem; }
-.edit-tally-chip { background:var(--surface); border:1px solid var(--border); border-radius:7px; padding:0.45rem 0.5rem; }
-.edit-tally-chip .form-label { margin-bottom:0.28rem; font-size:0.5rem; letter-spacing:0.14em; }
-.edit-tally-chip .form-input { padding:0.48rem 0.65rem; font-size:0.92rem; }
+.edit-grid-2 { display:grid; gap:0.4rem; }
+.edit-tally-grid { display:grid; gap:0.4rem; }
+/* stacked field row — label left, compact narrow stepper right (fits mobile, no side-scroll) */
+.fld { display:flex; align-items:center; justify-content:space-between; gap:0.5rem; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:0.3rem 0.4rem 0.3rem 0.72rem; }
+.fld-lbl { font-family:'Space Mono',monospace; font-size:0.56rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--muted); }
 .edit-zone-stack, .edit-specials-stack { display:grid; gap:0.45rem; }
 .edit-zone-row { display:grid; grid-template-columns:1fr auto; gap:0.45rem; align-items:start; background:var(--surface); border:1px solid var(--border); border-radius:7px; padding:0.55rem 0.6rem; }
 .edit-zone-main { min-width:0; }
 .edit-zone-main .form-input { margin-bottom:0.35rem; }
-.edit-special-row { display:grid; grid-template-columns:76px 1fr 118px auto; gap:0.35rem; align-items:end; background:var(--surface); border:1px solid var(--border); border-radius:7px; padding:0.45rem 0.5rem; }
+.edit-special-row { display:flex; flex-wrap:wrap; gap:0.4rem; align-items:center; background:var(--surface); border:1px solid var(--border); border-radius:7px; padding:0.5rem; }
+.edit-special-row .form-input { padding:0.5rem 0.55rem; font-size:0.9rem; }
+.edit-special-row input[type=text] { width:3.6rem; flex:none; }
+.edit-special-row input[type=time] { width:6rem; flex:none; }
+.edit-special-row select { flex:1; min-width:8rem; }
+.edit-special-row .zone-rm { margin-left:auto; margin-top:0; }
 .edit-empty { font-size:0.82rem; color:var(--muted); font-style:italic; font-family:'Jost',sans-serif; padding:0.1rem 0.15rem; }
 .edit-run-body .add-zone-btn { margin-top:0.1rem; }
 
@@ -473,6 +511,81 @@ header { background:var(--header-bg); padding:0.9rem 1.25rem 0; position:sticky;
 .bg-stay { flex:1; padding:0.85rem; background:var(--moss); border:none; border-radius:8px; color:#fff; font-family:'Jost',sans-serif; font-size:1rem; font-weight:600; letter-spacing:0.03em; cursor:pointer; }
 .bg-leave { padding:0.85rem 1rem; background:transparent; border:1px solid var(--border2); border-radius:8px; color:var(--muted); font-family:'Space Mono',monospace; font-size:0.75rem; cursor:pointer; transition:all .15s; }
 .bg-leave:hover { border-color:var(--danger); color:var(--danger); }
+
+/* ═══ v5: notes, compact dial, more color & hierarchy ═══ */
+.break-whisper.notes-w:hover { color:var(--moss); }
+
+/* compact dial pill — shrinks the wheel until tapped */
+.dial-pill { width:100%; display:flex; align-items:center; justify-content:space-between; gap:0.6rem;
+  background:var(--surface2); border:1px solid var(--border2); border-left:3px solid var(--ochre); border-radius:7px;
+  padding:0.6rem 0.85rem; cursor:pointer; transition:all .15s; -webkit-appearance:none; text-align:left; }
+.dial-pill:hover, .dial-pill:active { border-color:var(--ochre); background:var(--ochre-glow); }
+.dial-pill-lbl { font-family:'Space Mono',monospace; font-size:0.54rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); }
+.dial-pill-val { font-family:'Space Mono',monospace; font-size:1.15rem; font-weight:700; color:var(--ochre); letter-spacing:0.02em; }
+.dial-pill-val::after { content:'▾'; font-size:0.7rem; margin-left:0.4rem; color:var(--muted); vertical-align:middle; }
+.dial-pill.on-dark { background:rgba(0,0,0,0.22); border-left-color:var(--ochre); }
+.dial-pill.on-dark .dial-pill-val { color:var(--ochre); }
+
+/* in-place dial pop-out — expands right under the pill, commits live, no confirm */
+.dial-pop { display:none; margin-top:0.4rem; background:var(--surface); border:1px solid var(--border2);
+  border-radius:9px; padding:0.5rem; box-shadow:0 10px 26px rgba(20,16,8,0.3); animation:dialPop .16s ease; }
+.dial-pop.open { display:block; }
+.dial-pop.on-dark { background:rgba(0,0,0,0.32); border-color:var(--header-line); }
+@keyframes dialPop { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
+
+/* edit-screen steppers — tally +/- for every field, keyboard optional */
+.edit-stepper { display:flex; align-items:center; gap:0.3rem; flex-shrink:0; background:none; border:none; padding:0; }
+.es-btn { flex-shrink:0; width:1.85rem; height:1.85rem; display:flex; align-items:center; justify-content:center;
+  background:var(--surface2); border:1px solid var(--border2); border-radius:6px; color:var(--ochre);
+  font-family:'Space Mono',monospace; font-size:1.15rem; font-weight:700; line-height:1; cursor:pointer; transition:all .12s; -webkit-appearance:none; }
+.es-btn:hover { border-color:var(--ochre); }
+.es-btn:active { background:var(--ochre); color:#fff; }
+.es-val { flex:none; width:2.6rem; background:var(--surface2); border:1px solid var(--border2); border-radius:6px; outline:none; text-align:center;
+  font-family:'Space Mono',monospace; font-size:1.05rem; font-weight:700; color:var(--text); padding:0.32rem 0.1rem; -webkit-appearance:none; }
+.es-val:focus { border-color:var(--moss); }
+.es-val::-webkit-inner-spin-button, .es-val::-webkit-outer-spin-button { -webkit-appearance:none; margin:0; }
+.es-val::placeholder { color:var(--muted); font-weight:400; }
+.es-val.es-time { width:5.6rem; font-size:0.95rem; letter-spacing:0.01em; }
+.es-time::-webkit-calendar-picker-indicator { opacity:0.45; }
+
+/* in-run note — minimalist single tap-target */
+.run-note-btn { width:100%; display:flex; align-items:center; gap:0.5rem; margin-top:0.85rem;
+  background:transparent; border:1px dashed var(--border2); border-radius:7px; padding:0.6rem 0.8rem;
+  cursor:pointer; transition:all .15s; text-align:left; -webkit-appearance:none; }
+.run-note-btn:hover { border-color:var(--moss); }
+.run-note-btn.has-note { border-style:solid; border-color:var(--moss); border-left-width:3px; background:var(--moss-light); }
+.rnb-icon { color:var(--moss); font-size:0.85rem; flex-shrink:0; }
+.rnb-text { font-family:'Jost',sans-serif; font-size:0.85rem; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.run-note-btn.has-note .rnb-text { color:var(--text); }
+
+/* note sheet */
+.note-area { width:100%; min-height:170px; resize:vertical; background:var(--surface2); border:1px solid var(--border2);
+  border-radius:9px; padding:0.85rem 0.95rem; font-family:'Jost',sans-serif; font-size:1rem; line-height:1.55;
+  color:var(--text); outline:none; transition:border-color .15s; -webkit-appearance:none; }
+.note-area:focus { border-color:var(--moss); }
+.note-area::placeholder { color:var(--muted); }
+
+/* notes surfaced in day-detail history */
+.cal-dr-note { margin-top:0.5rem; padding:0.5rem 0.7rem; background:var(--moss-light); border-radius:6px;
+  font-family:'Jost',sans-serif; font-size:0.84rem; color:var(--text); line-height:1.5; }
+.cal-note-card { background:var(--surface); border:1px solid var(--card-line); border-top:3px solid var(--moss); border-radius:9px; padding:1rem; }
+.cal-note-lbl { font-family:'Space Mono',monospace; font-size:0.57rem; letter-spacing:0.2em; color:var(--moss); text-transform:uppercase; margin-bottom:0.55rem; }
+.cal-note-body { font-family:'Jost',sans-serif; font-size:0.92rem; color:var(--text); line-height:1.6; white-space:pre-wrap; }
+
+/* more color on the running totals chips */
+.tot-chip.c-hang { border-color:var(--info); }
+.tot-chip.c-hang .tot-n { color:var(--info); }
+.tot-chip.c-appt { border-color:var(--ochre); }
+.tot-chip.c-appt .tot-n { color:var(--ochre); }
+
+/* stat-block hierarchy: color-code the roll-up periods */
+.cal-overall.ov-week { border-top-color:var(--moss); }
+.cal-overall.ov-week .cal-overall-lbl { color:var(--moss); }
+.cal-overall.ov-month { border-top-color:var(--moss); }
+.cal-overall.ov-month .cal-overall-lbl { color:var(--moss); }
+.cal-overall.ov-all .cal-og { opacity:0.94; }
+.cal-overall.cal-tod { border-top-color:var(--info); }
+.cal-tod .cal-overall-lbl { color:var(--info); }
 
 </style>
 </head>
@@ -561,23 +674,16 @@ header { background:var(--header-bg); padding:0.9rem 1.25rem 0; position:sticky;
             <div id="run-zone-display"></div>
           </div>
           <div class="rch-right">
-            <div id="run-timer">0:00</div>
             <button class="add-street-trigger" onclick="toggleAddStreet()">+ Block / Street</button>
           </div>
         </div>
         <div class="add-street-inline hidden" id="add-street-inline">
           <div class="asi-label">Add Block / Street to Run</div>
           <input type="text" class="asi-street" id="asi-street-name" placeholder="Street name (leave blank to use current)…" autocomplete="off" autocorrect="off" spellcheck="false">
-          <div class="dial-wrap">
-            <div class="dial-chrome">
-              <div class="dial-hl-top"></div>
-              <div class="dial-hl-bot"></div>
-              <div class="dial-fade-t"></div>
-              <div class="dial-fade-b"></div>
-              <div class="dial-scroll" id="asi-dial" onscroll="onAsiDial()" onpointerdown="blurKeyboard()"></div>
-            </div>
-            <input class="dial-custom" id="asi-dial-custom" placeholder="or type custom block range…" oninput="onAsiCustom()">
-          </div>
+          <button type="button" class="dial-pill on-dark" id="asi-dial-pill" onclick="openAsiDialPicker()">
+            <span class="dial-pill-lbl">Block</span><span class="dial-pill-val" id="asi-dial-pill-val">100s</span>
+          </button>
+          <div class="dial-pop on-dark" id="asi-dial-pop"></div>
           <div class="asi-btns">
             <button class="asi-add" onclick="confirmAddStreet()">Add to Run</button>
             <button class="asi-cancel" onclick="toggleAddStreet()">Cancel</button>
@@ -674,6 +780,11 @@ header { background:var(--header-bg); padding:0.9rem 1.25rem 0; position:sticky;
           <span class="derived-tag">auto</span>
         </div>
 
+        <button class="run-note-btn" id="run-note-btn" onclick="openRunNote()">
+          <span class="rnb-icon">✎</span>
+          <span class="rnb-text" id="run-note-preview">Note for this block…</span>
+        </button>
+
       </div>
       <div class="run-card-foot">
         <button class="missed-btn" onclick="openMissedModal()">⏱ Missed Time</button>
@@ -687,7 +798,7 @@ header { background:var(--header-bg); padding:0.9rem 1.25rem 0; position:sticky;
     <div class="break-row">
       <button class="break-whisper" onclick="openApptModal()">· appointment ·</button>
       <div class="break-divider"></div>
-      <button class="break-whisper lunch-w" onclick="openLunchModal()">· lunch break ·</button>
+      <button class="break-whisper notes-w" onclick="openDayNote()">· notes ·</button>
     </div>
 
     <div class="log-head">
@@ -742,13 +853,23 @@ header { background:var(--header-bg); padding:0.9rem 1.25rem 0; position:sticky;
         <div id="zone-pairs-container"></div>
         <button class="add-zone-btn" onclick="addZonePair()">+ Add Another Street</button>
       </div>
-      <div class="form-group">
-        <label class="form-label" for="run-start-time">Start Time</label>
-        <input type="time" class="form-input" id="run-start-time" autocomplete="off">
-      </div>
-      <div class="form-group">
-        <label class="form-label" for="run-premises-input">Premises Count</label>
-        <input type="number" class="form-input" id="run-premises-input" inputmode="numeric" min="0" placeholder="How many premises?">
+      <div class="edit-grid-2 compact">
+        <div class="fld">
+          <span class="fld-lbl">Start Time</span>
+          <div class="edit-stepper time">
+            <button type="button" class="es-btn" onclick="stepTime('run-start-time',-5)">−</button>
+            <input type="time" class="es-val es-time" id="run-start-time" autocomplete="off">
+            <button type="button" class="es-btn" onclick="stepTime('run-start-time',5)">+</button>
+          </div>
+        </div>
+        <div class="fld">
+          <span class="fld-lbl">Premises Count</span>
+          <div class="edit-stepper">
+            <button type="button" class="es-btn" onclick="stepField('run-premises-input',-1)">−</button>
+            <input type="number" class="es-val" id="run-premises-input" inputmode="numeric" min="0" placeholder="—">
+            <button type="button" class="es-btn" onclick="stepField('run-premises-input',1)">+</button>
+          </div>
+        </div>
       </div>
     </div>
     <div class="sheet-foot">
@@ -781,21 +902,37 @@ header { background:var(--header-bg); padding:0.9rem 1.25rem 0; position:sticky;
           <div class="edit-card-title">Timing &amp; Premises</div>
         </div>
         <div class="edit-grid-2 compact">
-          <div class="form-group">
-            <label class="form-label" for="edit-run-start-time">Start Time</label>
-            <input type="time" class="form-input" id="edit-run-start-time" autocomplete="off">
+          <div class="fld">
+            <span class="fld-lbl">Start Time</span>
+            <div class="edit-stepper time">
+              <button type="button" class="es-btn" onclick="stepTime('edit-run-start-time',-5)">−</button>
+              <input type="time" class="es-val es-time" id="edit-run-start-time" autocomplete="off">
+              <button type="button" class="es-btn" onclick="stepTime('edit-run-start-time',5)">+</button>
+            </div>
           </div>
-          <div class="form-group">
-            <label class="form-label" for="edit-run-stop-time">Stop Time</label>
-            <input type="time" class="form-input" id="edit-run-stop-time" autocomplete="off" placeholder="Leave blank if active">
+          <div class="fld">
+            <span class="fld-lbl">Stop Time</span>
+            <div class="edit-stepper time">
+              <button type="button" class="es-btn" onclick="stepTime('edit-run-stop-time',-5,'edit-run-start-time')">−</button>
+              <input type="time" class="es-val es-time" id="edit-run-stop-time" autocomplete="off">
+              <button type="button" class="es-btn" onclick="stepTime('edit-run-stop-time',5,'edit-run-start-time')">+</button>
+            </div>
           </div>
-          <div class="form-group">
-            <label class="form-label" for="edit-run-premises-count">Initial Premises</label>
-            <input type="number" class="form-input" id="edit-run-premises-count" inputmode="numeric" min="0" placeholder="Optional">
+          <div class="fld">
+            <span class="fld-lbl">Initial Premises</span>
+            <div class="edit-stepper">
+              <button type="button" class="es-btn" onclick="stepField('edit-run-premises-count',-1)">−</button>
+              <input type="number" class="es-val" id="edit-run-premises-count" inputmode="numeric" min="0" placeholder="—">
+              <button type="button" class="es-btn" onclick="stepField('edit-run-premises-count',1)">+</button>
+            </div>
           </div>
-          <div class="form-group">
-            <label class="form-label" for="edit-run-premises-final">Final Premises</label>
-            <input type="number" class="form-input" id="edit-run-premises-final" inputmode="numeric" min="0" placeholder="Optional">
+          <div class="fld">
+            <span class="fld-lbl">Final Premises</span>
+            <div class="edit-stepper">
+              <button type="button" class="es-btn" onclick="stepField('edit-run-premises-final',-1)">−</button>
+              <input type="number" class="es-val" id="edit-run-premises-final" inputmode="numeric" min="0" placeholder="—">
+              <button type="button" class="es-btn" onclick="stepField('edit-run-premises-final',1)">+</button>
+            </div>
           </div>
         </div>
       </div>
@@ -805,13 +942,13 @@ header { background:var(--header-bg); padding:0.9rem 1.25rem 0; position:sticky;
           <div class="edit-card-title">Tallies</div>
         </div>
         <div class="edit-tally-grid">
-          <div class="edit-tally-chip"><label class="form-label" for="edit-tally-inspection">Inspection</label><input type="number" class="form-input" id="edit-tally-inspection" min="0"></div>
-          <div class="edit-tally-chip"><label class="form-label" for="edit-tally-refused">Refused</label><input type="number" class="form-input" id="edit-tally-refused" min="0"></div>
-          <div class="edit-tally-chip"><label class="form-label" for="edit-tally-ss">Handed</label><input type="number" class="form-input" id="edit-tally-ss" min="0"></div>
-          <div class="edit-tally-chip"><label class="form-label" for="edit-tally-vacantLot">Vacant Lot</label><input type="number" class="form-input" id="edit-tally-vacantLot" min="0"></div>
-          <div class="edit-tally-chip"><label class="form-label" for="edit-tally-vacantPremises">Vacant Premises</label><input type="number" class="form-input" id="edit-tally-vacantPremises" min="0"></div>
-          <div class="edit-tally-chip"><label class="form-label" for="edit-tally-mapCallElim">MapCall Elim</label><input type="number" class="form-input" id="edit-tally-mapCallElim" min="0"></div>
-          <div class="edit-tally-chip"><label class="form-label" for="edit-tally-newConstruction">New Construction</label><input type="number" class="form-input" id="edit-tally-newConstruction" min="0"></div>
+          <div class="fld"><span class="fld-lbl">Inspection</span><div class="edit-stepper"><button type="button" class="es-btn" onclick="stepField('edit-tally-inspection',-1)">−</button><input type="number" class="es-val" id="edit-tally-inspection" min="0" inputmode="numeric"><button type="button" class="es-btn" onclick="stepField('edit-tally-inspection',1)">+</button></div></div>
+          <div class="fld"><span class="fld-lbl">Refused</span><div class="edit-stepper"><button type="button" class="es-btn" onclick="stepField('edit-tally-refused',-1)">−</button><input type="number" class="es-val" id="edit-tally-refused" min="0" inputmode="numeric"><button type="button" class="es-btn" onclick="stepField('edit-tally-refused',1)">+</button></div></div>
+          <div class="fld"><span class="fld-lbl">Handed</span><div class="edit-stepper"><button type="button" class="es-btn" onclick="stepField('edit-tally-ss',-1)">−</button><input type="number" class="es-val" id="edit-tally-ss" min="0" inputmode="numeric"><button type="button" class="es-btn" onclick="stepField('edit-tally-ss',1)">+</button></div></div>
+          <div class="fld"><span class="fld-lbl">Vacant Lot</span><div class="edit-stepper"><button type="button" class="es-btn" onclick="stepField('edit-tally-vacantLot',-1)">−</button><input type="number" class="es-val" id="edit-tally-vacantLot" min="0" inputmode="numeric"><button type="button" class="es-btn" onclick="stepField('edit-tally-vacantLot',1)">+</button></div></div>
+          <div class="fld"><span class="fld-lbl">Vacant Premises</span><div class="edit-stepper"><button type="button" class="es-btn" onclick="stepField('edit-tally-vacantPremises',-1)">−</button><input type="number" class="es-val" id="edit-tally-vacantPremises" min="0" inputmode="numeric"><button type="button" class="es-btn" onclick="stepField('edit-tally-vacantPremises',1)">+</button></div></div>
+          <div class="fld"><span class="fld-lbl">MapCall Elim</span><div class="edit-stepper"><button type="button" class="es-btn" onclick="stepField('edit-tally-mapCallElim',-1)">−</button><input type="number" class="es-val" id="edit-tally-mapCallElim" min="0" inputmode="numeric"><button type="button" class="es-btn" onclick="stepField('edit-tally-mapCallElim',1)">+</button></div></div>
+          <div class="fld"><span class="fld-lbl">New Construction</span><div class="edit-stepper"><button type="button" class="es-btn" onclick="stepField('edit-tally-newConstruction',-1)">−</button><input type="number" class="es-val" id="edit-tally-newConstruction" min="0" inputmode="numeric"><button type="button" class="es-btn" onclick="stepField('edit-tally-newConstruction',1)">+</button></div></div>
         </div>
       </div>
 
@@ -861,7 +998,7 @@ header { background:var(--header-bg); padding:0.9rem 1.25rem 0; position:sticky;
   <div class="modal-sheet">
     <div class="sheet-handle"></div>
     <div class="sheet-head">
-      <div class="sheet-eyebrow">Break</div>
+      <div class="sheet-eyebrow">Schedule</div>
       <div class="sheet-title" id="appt-modal-title">Appointment</div>
     </div>
     <div class="sheet-body">
@@ -908,32 +1045,20 @@ header { background:var(--header-bg); padding:0.9rem 1.25rem 0; position:sticky;
   </div>
 </div>
 
-<!-- Lunch / Break Modal -->
-<div id="modal-lunch" class="modal-overlay">
+<!-- Note Modal (day scratchpad + per-run note, same sheet) -->
+<div id="modal-note" class="modal-overlay">
   <div class="modal-sheet">
     <div class="sheet-handle"></div>
     <div class="sheet-head">
-      <div class="sheet-eyebrow">Break</div>
-      <div class="sheet-title">Lunch Break</div>
+      <div class="sheet-eyebrow" id="note-eyebrow">Scratchpad</div>
+      <div class="sheet-title" id="note-title">Day Notes</div>
     </div>
     <div class="sheet-body">
-      <div class="form-group">
-        <label class="form-label" for="lunch-label">Label</label>
-        <input type="text" class="form-input" id="lunch-label" value="Lunch" autocomplete="off">
-      </div>
-      <div class="form-group">
-        <label class="form-label" for="lunch-start">Start Time</label>
-        <input type="time" class="form-input" id="lunch-start" autocomplete="off" oninput="updateLunchDur()">
-      </div>
-      <div class="form-group">
-        <label class="form-label" for="lunch-stop">End Time</label>
-        <input type="time" class="form-input" id="lunch-stop" autocomplete="off" oninput="updateLunchDur()">
-      </div>
-      <div class="lunch-dur-display" id="lunch-dur-display">—</div>
+      <textarea class="note-area" id="note-text" placeholder="Jot anything — reminders, oddities, who to circle back to…"></textarea>
     </div>
     <div class="sheet-foot">
-      <button class="sheet-cancel" onclick="closeModal('modal-lunch')">Cancel</button>
-      <button class="sheet-primary" style="background:var(--rust)" onclick="confirmLunch()">Log Break</button>
+      <button class="sheet-cancel" onclick="closeModal('modal-note')">Cancel</button>
+      <button class="sheet-primary" onclick="saveNote()">Save Note</button>
     </div>
   </div>
 </div>
@@ -1063,6 +1188,44 @@ function blurKeyboard() {
   const el = document.activeElement;
   if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) el.blur();
 }
+
+// ── DIAL POP-OUT (lightweight, in place under the tapped pill; commits live, no confirm) ──
+function closeAllInlineDials() {
+  document.querySelectorAll('.dial-pop.open').forEach(p => { p.classList.remove('open'); p.innerHTML = ''; });
+}
+function openInlineDial(popId, currentVal, onPick) {
+  const pop = document.getElementById(popId);
+  if (!pop) return;
+  const wasOpen = pop.classList.contains('open');
+  closeAllInlineDials();
+  if (wasOpen) return;                 // tapping the same pill again closes it
+  pop.innerHTML =
+    `<div class="dial-chrome">
+       <div class="dial-hl-top"></div><div class="dial-hl-bot"></div>
+       <div class="dial-fade-t"></div><div class="dial-fade-b"></div>
+       <div class="dial-scroll"></div>
+     </div>
+     <input class="dial-custom" placeholder="or type a custom range…">`;
+  pop.classList.add('open');
+  const scroll = pop.querySelector('.dial-scroll');
+  const custom = pop.querySelector('.dial-custom');
+  buildDialItems(scroll);
+  const inList = DIAL_VALS.includes(currentVal);
+  custom.value = inList ? '' : (currentVal || '');
+  const commit = () => onPick((custom.value.trim()) || getDialVal(scroll));
+  // Grabbing the wheel clears a typed custom value so the wheel wins; programmatic
+  // scroll never fires pointerdown, so the initial custom value is safe.
+  scroll.addEventListener('pointerdown', () => { blurKeyboard(); custom.value = ''; });
+  scroll.addEventListener('scroll', commit);
+  custom.addEventListener('input', commit);
+  requestAnimationFrame(() => dialScrollTo(scroll, inList ? currentVal : '100s'));
+}
+// Tap outside an open dial to dismiss it (value is already committed live).
+document.addEventListener('pointerdown', e => {
+  if (!document.querySelector('.dial-pop.open')) return;
+  if (e.target.closest('.dial-pop') || e.target.closest('.dial-pill')) return;
+  closeAllInlineDials();
+}, true);
 // All prefill getters return the ABBREVIATED form, so any field that seeds itself
 // from a prior street shows the short name even for streets stored before this fix.
 function firstRunStreet() {
@@ -1252,6 +1415,15 @@ function defaultTallies() {
 function derivedContactCount(t) {
   return Math.max((t?.contact || 0), (t?.inspection || 0) + (t?.refused || 0) + (t?.ss || 0));
 }
+// Appointments that turned into a completed inspection. These roll into the
+// headline Inspection numbers (log bar, day/week/month/all-time) — but NOT into
+// the door-knock conversion rates, which stay pure canvassing so the % can't lie.
+function apptList(d) {
+  return (d?.appointments && d.appointments.length) ? d.appointments : (d?.events || []).filter(e => e.type === 'appointment');
+}
+function apptInspCount(d) {
+  return apptList(d).filter(a => a.result === 'Inspection Done').length;
+}
 
 
 // ── ROUTING ──
@@ -1306,7 +1478,8 @@ function computeDayTotals(d) {
       minutes += mins;
     }
   });
-  return { premises, contacts: derivedContactCount(totals), inspections: totals.inspection, minutes, runs: (d?.runs || []).length, tallies: totals };
+  const apptInsp = apptInspCount(d);
+  return { premises, contacts: derivedContactCount(totals), inspections: totals.inspection, apptInspections: apptInsp, headlineInspections: totals.inspection + apptInsp, minutes, runs: (d?.runs || []).length, tallies: totals };
 }
 
 function renderCalendar() {
@@ -1325,8 +1498,27 @@ function renderCalendar() {
   back.textContent = '◂ Back';
   document.getElementById('cal-mode-week').classList.toggle('on', calMode === 'week');
   document.getElementById('cal-mode-month').classList.toggle('on', calMode === 'month');
+  const periodKeys = calMode === 'week' ? weekDateStrs() : monthDateStrs();
+  const periodLabel = calMode === 'week' ? 'This Week' : 'This Month';
+  const allKeys = Object.keys(archive);
   document.getElementById('cal-body').innerHTML =
-    (calMode === 'week' ? renderCalWeek() : renderCalMonth()) + renderOverall();
+    (calMode === 'week' ? renderCalWeek() : renderCalMonth())
+    + renderAggregate(periodKeys, periodLabel, calMode === 'week' ? 'ov-week' : 'ov-month')
+    + renderAggregate(allKeys, 'Overall · All Time', 'ov-all')
+    + renderTimeOfDay(allKeys);
+}
+
+// Date-string lists for the currently-anchored week / month (used to scope stats).
+function weekDateStrs() {
+  const a = parseDay(calAnchor); const sun = new Date(a); sun.setDate(a.getDate() - a.getDay());
+  const out = []; for (let i = 0; i < 7; i++) { const d = new Date(sun); d.setDate(sun.getDate() + i); out.push(fmtDay(d)); }
+  return out;
+}
+function monthDateStrs() {
+  const a = parseDay(calAnchor); const y = a.getFullYear(), mo = a.getMonth();
+  const n = new Date(y, mo + 1, 0).getDate(); const out = [];
+  for (let dn = 1; dn <= n; dn++) out.push(fmtDay(new Date(y, mo, dn)));
+  return out;
 }
 
 const CAL_MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -1354,7 +1546,7 @@ function renderCalWeek() {
       <div class="cal-wtot">
         <div class="cal-stat"><b>${tot.premises}</b><span>Prem</span></div>
         <div class="cal-stat"><b>${tot.contacts}</b><span>Cont</span></div>
-        <div class="cal-stat"><b>${tot.inspections}</b><span>Insp</span></div>
+        <div class="cal-stat"><b>${tot.headlineInspections}</b><span>Insp</span></div>
       </div>
     </div>`;
   }).join('');
@@ -1383,22 +1575,88 @@ function renderCalMonth() {
   return `<div class="cal-dow">${dow}</div><div class="cal-month">${cells.join('')}</div>`;
 }
 
-function renderOverall() {
-  const keys = Object.keys(archive).filter(k => archive[k] && archive[k].runs);
+// Roll a set of day-keys into one stat block. Reused for This Week / This Month /
+// All-Time — same math, different date range. Inspections here are the *headline*
+// number (canvassing + successful appointments).
+function renderAggregate(keys, label, accent) {
+  const live = keys.filter(k => archive[k] && archive[k].runs);
   let premises = 0, contacts = 0, inspections = 0, minutes = 0, runs = 0;
-  keys.forEach(k => { const t = computeDayTotals(archive[k]); premises += t.premises; contacts += t.contacts; inspections += t.inspections; minutes += t.minutes; runs += t.runs; });
+  live.forEach(k => { const t = computeDayTotals(archive[k]); premises += t.premises; contacts += t.contacts; inspections += t.headlineInspections; minutes += t.minutes; runs += t.runs; });
   const hrs = Math.floor(minutes / 60), mn = minutes % 60;
   const timeStr = hrs > 0 ? `${hrs}h ${mn}m` : `${mn}m`;
-  return `<div class="cal-overall">
-    <div class="cal-overall-lbl">Overall · All Time</div>
+  if (!live.length) {
+    return `<div class="cal-overall cal-agg-empty ${accent || ''}">
+      <div class="cal-overall-lbl">${label}</div>
+      <div class="cal-none">No logs in this range yet.</div>
+    </div>`;
+  }
+  return `<div class="cal-overall ${accent || ''}">
+    <div class="cal-overall-lbl">${label}</div>
     <div class="cal-og">
-      <div class="cal-ostat"><b>${keys.length}</b><span>Days</span></div>
+      <div class="cal-ostat"><b>${live.length}</b><span>Days</span></div>
       <div class="cal-ostat"><b>${premises}</b><span>Premises</span></div>
       <div class="cal-ostat"><b>${contacts}</b><span>Contacts</span></div>
       <div class="cal-ostat"><b>${inspections}</b><span>Inspections</span></div>
       <div class="cal-ostat"><b>${runs}</b><span>Runs</span></div>
       <div class="cal-ostat"><b>${timeStr}</b><span>Field Time</span></div>
     </div>
+  </div>`;
+}
+
+// When you tend to catch people. Runs only carry start/stop + totals (not a
+// timestamp per contact), so this is bucketed by run-start into day-parts —
+// honest, not fake minute-precision. Successful appointments use their own time.
+const TOD_PARTS = [
+  { key:'morning',   label:'Morning',   sub:'5–11a',  lo:5,  hi:11 },
+  { key:'midday',    label:'Midday',    sub:'11–2p',  lo:11, hi:14 },
+  { key:'afternoon', label:'Afternoon', sub:'2–5p',   lo:14, hi:17 },
+  { key:'evening',   label:'Evening',   sub:'5–9p',   lo:17, hi:21 },
+];
+function todPartFor(hhmm) {
+  if (!hhmm) return null;
+  const h = parseInt(hhmm.split(':')[0], 10);
+  return TOD_PARTS.find(p => h >= p.lo && h < p.hi) || null;
+}
+function renderTimeOfDay(keys) {
+  const live = keys.filter(k => archive[k] && archive[k].runs);
+  const buckets = {}; TOD_PARTS.forEach(p => buckets[p.key] = { contacts: 0, inspections: 0 });
+  let sampled = false;
+  live.forEach(k => {
+    const d = archive[k];
+    (d.runs || []).forEach(r => {
+      const part = todPartFor(r.startTime); if (!part) return;
+      sampled = true;
+      const t = r.tallies || defaultTallies();
+      buckets[part.key].contacts += derivedContactCount(t);
+      buckets[part.key].inspections += (t.inspection || 0);
+    });
+    apptList(d).forEach(a => {
+      if (a.result !== 'Inspection Done') return;
+      const part = todPartFor(a.time); if (!part) return;
+      sampled = true;
+      buckets[part.key].inspections += 1;
+    });
+  });
+  if (!sampled) return '';
+  const maxC = Math.max(1, ...TOD_PARTS.map(p => buckets[p.key].contacts));
+  const maxI = Math.max(1, ...TOD_PARTS.map(p => buckets[p.key].inspections));
+  const peakC = TOD_PARTS.reduce((a, p) => buckets[p.key].contacts > buckets[a.key].contacts ? p : a, TOD_PARTS[0]);
+  const peakI = TOD_PARTS.reduce((a, p) => buckets[p.key].inspections > buckets[a.key].inspections ? p : a, TOD_PARTS[0]);
+  const rows = TOD_PARTS.map(p => {
+    const b = buckets[p.key];
+    return `<div class="tod-row">
+      <div class="tod-when"><b>${p.label}</b><span>${p.sub}</span></div>
+      <div class="tod-bars">
+        <div class="tod-bar"><span class="tod-bar-lbl">Cont</span><span class="tod-track"><i class="tod-fill c" style="width:${Math.round(b.contacts / maxC * 100)}%"></i></span><span class="tod-n">${b.contacts}</span></div>
+        <div class="tod-bar"><span class="tod-bar-lbl">Insp</span><span class="tod-track"><i class="tod-fill i" style="width:${Math.round(b.inspections / maxI * 100)}%"></i></span><span class="tod-n">${b.inspections}</span></div>
+      </div>
+    </div>`;
+  }).join('');
+  return `<div class="cal-overall cal-tod">
+    <div class="cal-overall-lbl">Best Times · All Time</div>
+    <div class="tod-takeaway">Most contacts <b>${peakC.label}</b> · most inspections <b>${peakI.label}</b></div>
+    <div class="tod-grid">${rows}</div>
+    <div class="tod-foot">By run start time — precision follows your run length.</div>
   </div>`;
 }
 
@@ -1423,21 +1681,47 @@ function renderDayDetail(ds) {
       t.mapCallElim ? ['MC Elim', t.mapCallElim] : null,
       t.newConstruction ? ['New Const', t.newConstruction] : null,
     ].filter(Boolean).map(([l, v]) => `<span class="cal-dchip">${l} <b>${v}</b></span>`).join('');
+    const noteHtml = (r.note && r.note.trim()) ? `<div class="cal-dr-note">✎ ${esc(r.note.trim())}</div>` : '';
     return `<div class="cal-detail-run">
       <div class="cal-dr-head"><span class="cal-dr-zone">${zone || 'Run'}</span><span class="cal-dr-time">${time}</span></div>
       <div class="cal-dr-chips">${chips}</div>
+      ${noteHtml}
     </div>`;
   }).join('') || '<div class="cal-none">No runs logged this day.</div>';
+  // Appointments on past days — with their outcome. Completed ones already fed
+  // the headline Inspection total above; here we show the individual records.
+  const appts = apptList(d).slice().sort((a, b) => (a.time || '').localeCompare(b.time || ''));
+  const RES_CLS = { 'Inspection Done': 'done', 'Missed': 'missed', '': 'pending' };
+  const RES_LBL = { 'Inspection Done': 'Inspection', 'Missed': 'Missed', '': 'Pending' };
+  const apptsHtml = appts.map(a => {
+    const rc = RES_CLS[a.result || ''] || 'pending';
+    return `<div class="cal-appt ${rc}">
+      <span class="cal-appt-time">${a.time ? fmtTime(a.time) : '—'}</span>
+      <span class="cal-appt-addr">${a.address || 'Appointment'}</span>
+      <span class="cal-appt-res ${rc}">${RES_LBL[a.result || ''] || 'Pending'}</span>
+    </div>`;
+  }).join('');
+  const eventsHtml = apptsHtml
+    ? `<div style="height:0.9rem"></div>
+       <div class="cal-overall-lbl" style="color:var(--ochre)">Appointments</div>
+       <div class="cal-appts">${apptsHtml}</div>`
+    : '';
+  const dayNoteHtml = (d.note && d.note.trim())
+    ? `<div style="height:0.9rem"></div>
+       <div class="cal-note-card"><div class="cal-note-lbl">✎ Day Notes</div><div class="cal-note-body">${esc(d.note.trim())}</div></div>`
+    : '';
   return `<div class="cal-overall">
       <div class="cal-overall-lbl">Day Totals · ${team}</div>
       <div class="cal-og">
         <div class="cal-ostat"><b>${tot.premises}</b><span>Premises</span></div>
         <div class="cal-ostat"><b>${tot.contacts}</b><span>Contacts</span></div>
-        <div class="cal-ostat"><b>${tot.inspections}</b><span>Inspections</span></div>
+        <div class="cal-ostat"><b>${tot.headlineInspections}</b><span>Inspections</span></div>
       </div>
     </div>
     <div style="height:0.9rem"></div>
-    ${runsHtml}`;
+    ${runsHtml}
+    ${eventsHtml}
+    ${dayNoteHtml}`;
 }
 
 // ── SETUP ──
@@ -1521,7 +1805,15 @@ function renderMain() {
 function renderActiveRun(run) {
   document.getElementById('run-zone-display').textContent = formatCoverageZone(run.coverageZone);
   document.getElementById('street-ctx').textContent = currentRunStreet() || '—';
-  renderTallyUI(run); updateSpecialBtns();
+  renderTallyUI(run); updateSpecialBtns(); updateRunNoteBtn(run);
+}
+function updateRunNoteBtn(run) {
+  const btn = document.getElementById('run-note-btn');
+  const prev = document.getElementById('run-note-preview');
+  if (!btn || !prev) return;
+  const note = (run && run.note || '').trim();
+  btn.classList.toggle('has-note', !!note);
+  prev.textContent = note || 'Note for this block…';
 }
 function onHouseInput() { updateSpecialBtns(); }
 function updateSpecialBtns() {
@@ -1578,29 +1870,20 @@ function toggleAddStreet() {
   const el = document.getElementById('add-street-inline');
   el.classList.toggle('hidden', !addStreetOpen);
   if (addStreetOpen) {
-    // Start the wheel where this run's last block left off (e.g. 700s), not back at 100s.
+    // Start the pill where this run's last block left off (e.g. 700s), not back at 100s.
     const run = activeRun();
     const lastZone = run?.coverageZone?.[run.coverageZone.length - 1];
     const startBlock = (lastZone && DIAL_VALS.includes(lastZone.blockRange)) ? lastZone.blockRange : '100s';
     document.getElementById('asi-street-name').value = currentRunStreet();
-    document.getElementById('asi-dial-custom').value = '';
     asiBlockRange = startBlock;
-    const dialEl = document.getElementById('asi-dial');
-    buildDialItems(dialEl);
-    requestAnimationFrame(() => dialScrollTo(dialEl, startBlock));
+    setAsiPill(startBlock);
     document.getElementById('asi-street-name').focus();
     document.getElementById('asi-street-name').select();
   }
 }
-function onAsiDial() {
-  const dialEl = document.getElementById('asi-dial');
-  const custom = document.getElementById('asi-dial-custom').value.trim();
-  if (!custom) asiBlockRange = getDialVal(dialEl);
-}
-function onAsiCustom() {
-  const v = document.getElementById('asi-dial-custom').value.trim();
-  if (v) asiBlockRange = v;
-  else asiBlockRange = getDialVal(document.getElementById('asi-dial'));
+function setAsiPill(v) { const el = document.getElementById('asi-dial-pill-val'); if (el) el.textContent = v; }
+function openAsiDialPicker() {
+  openInlineDial('asi-dial-pop', asiBlockRange, v => { asiBlockRange = v; setAsiPill(v); });
 }
 function confirmAddStreet() {
   const run = activeRun(); if (!run) return;
@@ -1616,12 +1899,9 @@ function confirmAddStreet() {
 }
 
 // ── TIMER ──
-function startTimer(run) {
-  stopTimer();
-  timerIv = setInterval(() => {
-    if (run.startTime) document.getElementById('run-timer').textContent = elapsedSince(run.startTime);
-  }, 1000);
-}
+// The live ticking display was removed by design. Start/stop times are still
+// recorded on each run, so Field Time still rolls up in the calendar stats.
+function startTimer() {}
 function stopTimer() { if (timerIv) { clearInterval(timerIv); timerIv = null; } }
 
 // ── GPS ──
@@ -1689,42 +1969,23 @@ function renderZonePairs() {
   document.getElementById('zone-pairs-container').innerHTML = zonePairs.map((zp, i) => `
     <div class="zone-pair" id="zp-${i}">
       <div style="flex:1">
-        <input type="text" class="form-input" style="margin-bottom:0.35rem"
+        <input type="text" class="form-input" style="margin-bottom:0.4rem"
           placeholder="Street name" value="${esc(zp.street)}"
           oninput="zonePairs[${i}].street=this.value"
           autocomplete="off" autocorrect="off" spellcheck="false">
-        <div class="dial-wrap">
-          <div class="dial-chrome">
-            <div class="dial-hl-top"></div>
-            <div class="dial-hl-bot"></div>
-            <div class="dial-fade-t"></div>
-            <div class="dial-fade-b"></div>
-            <div class="dial-scroll" id="dial-${i}" onscroll="onZoneDial(${i})" onpointerdown="blurKeyboard()"></div>
-          </div>
-          <input class="dial-custom" id="dcustom-${i}" placeholder="or type custom block range…"
-            value="${DIAL_VALS.includes(zp.blockRange)?'':esc(zp.blockRange)}"
-            oninput="onZoneCustom(${i},this.value)">
-        </div>
+        <button type="button" class="dial-pill" id="zone-pill-${i}" onclick="openZoneDialPicker(${i})">
+          <span class="dial-pill-lbl">Block</span><span class="dial-pill-val">${esc(zp.blockRange || '100s')}</span>
+        </button>
+        <div class="dial-pop" id="zone-pop-${i}"></div>
       </div>
       ${zonePairs.length > 1 ? `<button class="zone-rm" onclick="rmZone(${i})">✕</button>` : ''}
     </div>`).join('');
-  requestAnimationFrame(() => {
-    zonePairs.forEach((zp, i) => {
-      const el = document.getElementById(`dial-${i}`);
-      if (!el) return;
-      buildDialItems(el);
-      requestAnimationFrame(() => dialScrollTo(el, DIAL_VALS.includes(zp.blockRange) ? zp.blockRange : '100s'));
-    });
+}
+function openZoneDialPicker(i) {
+  openInlineDial(`zone-pop-${i}`, zonePairs[i].blockRange, v => {
+    zonePairs[i].blockRange = v;
+    const el = document.querySelector(`#zone-pill-${i} .dial-pill-val`); if (el) el.textContent = v;
   });
-}
-function onZoneDial(i) {
-  const el = document.getElementById(`dial-${i}`);
-  const custom = document.getElementById(`dcustom-${i}`)?.value?.trim();
-  if (!custom) zonePairs[i].blockRange = getDialVal(el);
-}
-function onZoneCustom(i, val) {
-  const v = val.trim();
-  zonePairs[i].blockRange = v || getDialVal(document.getElementById(`dial-${i}`));
 }
 function addZonePair() { const defaultStreet = zonePairs[0]?.street || lastRunStreet(); zonePairs.push({ street: defaultStreet, blockRange: '100s' }); renderZonePairs(); }
 function rmZone(i) { zonePairs.splice(i, 1); renderZonePairs(); }
@@ -1754,42 +2015,23 @@ function renderEditZonePairs() {
   container.innerHTML = editZonePairs.map((zp, i) => `
     <div class="edit-zone-row" id="ezp-${i}">
       <div class="edit-zone-main">
-        <input type="text" class="form-input"
+        <input type="text" class="form-input" style="margin-bottom:0.4rem"
           placeholder="Street name" value="${esc(zp.street)}"
           oninput="editZonePairs[${i}].street=this.value"
           autocomplete="off" autocorrect="off" spellcheck="false">
-        <div class="dial-wrap">
-          <div class="dial-chrome">
-            <div class="dial-hl-top"></div>
-            <div class="dial-hl-bot"></div>
-            <div class="dial-fade-t"></div>
-            <div class="dial-fade-b"></div>
-            <div class="dial-scroll" id="edit-dial-${i}" onscroll="onEditZoneDial(${i})" onpointerdown="blurKeyboard()"></div>
-          </div>
-          <input class="dial-custom" id="edit-dcustom-${i}" placeholder="or type custom block range…"
-            value="${DIAL_VALS.includes(zp.blockRange)?'':esc(zp.blockRange)}"
-            oninput="onEditZoneCustom(${i},this.value)">
-        </div>
+        <button type="button" class="dial-pill" id="edit-zone-pill-${i}" onclick="openEditZoneDialPicker(${i})">
+          <span class="dial-pill-lbl">Block</span><span class="dial-pill-val">${esc(zp.blockRange || '100s')}</span>
+        </button>
+        <div class="dial-pop" id="edit-zone-pop-${i}"></div>
       </div>
       ${editZonePairs.length > 1 ? `<button class="zone-rm" onclick="rmEditZonePair(${i})">✕</button>` : ''}
     </div>`).join('');
-  requestAnimationFrame(() => {
-    editZonePairs.forEach((zp, i) => {
-      const el = document.getElementById(`edit-dial-${i}`);
-      if (!el) return;
-      buildDialItems(el);
-      requestAnimationFrame(() => dialScrollTo(el, DIAL_VALS.includes(zp.blockRange) ? zp.blockRange : '100s'));
-    });
+}
+function openEditZoneDialPicker(i) {
+  openInlineDial(`edit-zone-pop-${i}`, editZonePairs[i].blockRange, v => {
+    editZonePairs[i].blockRange = v;
+    const el = document.querySelector(`#edit-zone-pill-${i} .dial-pill-val`); if (el) el.textContent = v;
   });
-}
-function onEditZoneDial(i) {
-  const el = document.getElementById(`edit-dial-${i}`);
-  const custom = document.getElementById(`edit-dcustom-${i}`)?.value?.trim();
-  if (!custom) editZonePairs[i].blockRange = getDialVal(el);
-}
-function onEditZoneCustom(i, val) {
-  const v = val.trim();
-  editZonePairs[i].blockRange = v || getDialVal(document.getElementById(`edit-dial-${i}`));
 }
 function addEditZonePair() {
   const defaultStreet = editZonePairs[0]?.street || lastRunStreet();
@@ -1827,6 +2069,19 @@ function addEditSpecial() {
 function removeEditSpecial(i) {
   editSpecials.splice(i, 1);
   renderEditSpecials();
+}
+// Edit-screen steppers — nudge a field without the keyboard (tap the value to type).
+function stepField(id, delta) {
+  const el = document.getElementById(id); if (!el) return;
+  const cur = parseInt(el.value, 10);
+  el.value = Math.max(0, (isNaN(cur) ? 0 : cur) + delta);
+}
+function stepTime(id, deltaMin, fallbackId) {
+  const el = document.getElementById(id); if (!el) return;
+  let v = el.value || (fallbackId ? (document.getElementById(fallbackId)?.value || '') : '') || nowTime();
+  let [h, m] = v.split(':').map(Number);
+  const total = ((h * 60 + m) + deltaMin + 1440) % 1440;
+  el.value = String(Math.floor(total / 60)).padStart(2, '0') + ':' + String(total % 60).padStart(2, '0');
 }
 function openEditRunModal(runId = null) {
   const targetId = runId || activeRun()?.id;
@@ -2002,28 +2257,38 @@ function quickApptResult(id, r) {
   save(); renderLog(); renderTotals();
 }
 
-// ── LUNCH / BREAK ──
-function openLunchModal() {
-  const t = nowTime();
-  document.getElementById('lunch-label').value = 'Lunch';
-  document.getElementById('lunch-start').value = t;
-  document.getElementById('lunch-stop').value = '';
-  document.getElementById('lunch-dur-display').textContent = '—';
-  document.getElementById('modal-lunch').classList.add('open');
+// ── NOTES (day scratchpad + per-run note, one shared sheet) ──
+let noteTarget = null;   // 'day' | the active run object
+function openDayNote() {
+  if (!day) return;
+  noteTarget = 'day';
+  document.getElementById('note-eyebrow').textContent = 'Scratchpad';
+  document.getElementById('note-title').textContent = 'Day Notes';
+  const ta = document.getElementById('note-text');
+  ta.placeholder = 'Jot anything — reminders, oddities, who to circle back to…';
+  ta.value = day.note || '';
+  document.getElementById('modal-note').classList.add('open');
+  requestAnimationFrame(() => ta.focus());
 }
-function updateLunchDur() {
-  const s = document.getElementById('lunch-start').value;
-  const e = document.getElementById('lunch-stop').value;
-  const d = calcDur(s, e);
-  document.getElementById('lunch-dur-display').textContent = d || '—';
+function openRunNote() {
+  const run = activeRun(); if (!run) return;
+  noteTarget = run;
+  document.getElementById('note-eyebrow').textContent = 'This Block';
+  document.getElementById('note-title').textContent = formatCoverageZone(run.coverageZone) || 'Block Note';
+  const ta = document.getElementById('note-text');
+  ta.placeholder = 'Quick note for this block — dog at #312, back after 5…';
+  ta.value = run.note || '';
+  document.getElementById('modal-note').classList.add('open');
+  requestAnimationFrame(() => ta.focus());
 }
-function confirmLunch() {
-  const label = document.getElementById('lunch-label').value.trim() || 'Lunch';
-  const startTime = document.getElementById('lunch-start').value || nowTime();
-  const stopTime = document.getElementById('lunch-stop').value || '';
-  const dur = calcDur(startTime, stopTime);
-  day.events.push({ type: 'lunch', time: startTime, label, startTime, stopTime, dur });
-  save(); closeModal('modal-lunch'); renderLog(); renderTotals();
+function saveNote() {
+  const val = document.getElementById('note-text').value.trim();
+  if (noteTarget === 'day') { day.note = val; }
+  else if (noteTarget) { noteTarget.note = val; }
+  save();
+  closeModal('modal-note');
+  const run = activeRun(); if (run) updateRunNoteBtn(run);
+  noteTarget = null;
 }
 
 // ── TEAM MODAL ──
@@ -2093,7 +2358,6 @@ function renderLog() {
   const timeline = [];
   day.runs.forEach(run => { timeline.push({ type: 'run', time: run.startTime || '00:00', run }); });
   day.events.filter(e => e.type === 'appointment').forEach(ev => { if (!ev.id) ev.id = Date.now() + Math.floor(Math.random()*1000); timeline.push({ type: 'appointment', time: ev.time, ev }); });
-  day.events.filter(e => e.type === 'lunch').forEach(ev => { timeline.push({ type: 'lunch', time: ev.time, ev }); });
   day.events.filter(e => e.type === 'team-change').forEach(ev => { timeline.push({ type: 'team', time: ev.time, ev }); });
 
   if (!timeline.length) { list.innerHTML = '<div id="log-empty">No entries yet</div>'; return; }
@@ -2103,7 +2367,6 @@ function renderLog() {
   for (const item of timeline) {
     if (item.type === 'run') html += renderRunLogCard(item.run);
     else if (item.type === 'appointment') html += renderBreakCard('appt', item.ev);
-    else if (item.type === 'lunch') html += renderLunchCard(item.ev);
     else if (item.type === 'team') html += renderTeamCard(item.ev);
   }
   list.innerHTML = html;
@@ -2197,17 +2460,6 @@ function renderBreakCard(type, ev) {
     </div>
   </div>`;
 }
-function renderLunchCard(ev) {
-  return `<div class="break-card">
-    <div class="bc-pip lunch"></div>
-    <div class="bc-time">${fmtTime(ev.startTime)}</div>
-    <div class="bc-body">
-      <div class="bc-type">Break</div>
-      <div class="bc-main">${ev.label || 'Lunch'}</div>
-      ${ev.stopTime ? `<div class="bc-sub">${fmtTime(ev.startTime)} → ${fmtTime(ev.stopTime)}${ev.dur ? ' · ' + ev.dur : ''}</div>` : ''}
-    </div>
-  </div>`;
-}
 function renderTeamCard(ev) {
   return `<div class="break-card">
     <div class="bc-pip team"></div>
@@ -2248,9 +2500,8 @@ function renderTotals() {
   });
 
   const appts = day.events.filter(e => e.type === 'appointment').length;
-  const lunches = day.events.filter(e => e.type === 'lunch').length;
   const bar = document.getElementById('totals-bar');
-  const hasData = Object.values(totals).some(v=>v>0) || totalPremises > 0 || totalMinutes > 0 || totalHangers > 0 || appts > 0 || lunches > 0;
+  const hasData = Object.values(totals).some(v=>v>0) || totalPremises > 0 || totalHangers > 0 || appts > 0;
   if (!hasData) { bar.classList.remove('show'); return; }
   bar.classList.add('show');
 
@@ -2258,9 +2509,10 @@ function renderTotals() {
   // Vacancies (lot + premises) are still counted separately per run — only the
   // running-totals bar collapses them into one "Vacant" chip, kept at the bottom.
   const totalVacant = (totals.vacantLot || 0) + (totals.vacantPremises || 0);
+  const apptInsp = apptInspCount(day); // successful appointments count as inspections
   const chips = [
     { k:'contact',        l:'Contacts', cls:'c-cont', v:totalContacts },
-    { k:'inspection',     l:'Insp',     cls:'c-insp', v:totals.inspection },
+    { k:'inspection',     l:'Insp',     cls:'c-insp', v:totals.inspection + apptInsp },
     { k:'refused',        l:'Refused',  cls:'',       v:totals.refused },
     { k:'ss',             l:'Handed',   cls:'',       v:totals.ss },
     { k:'mapCallElim',    l:'MC Elim',  cls:'',       v:totals.mapCallElim },
@@ -2269,30 +2521,33 @@ function renderTotals() {
   ];
   document.getElementById('totals-chips').innerHTML =
     (totalPremises > 0 ? `<div class="tot-chip c-prem"><span class="tot-n">${totalPremises}</span><span class="tot-l">Prem</span></div>` : '') +
-    (totalMinutes > 0 ? `<div class="tot-chip"><span class="tot-n">${totalMinutes}</span><span class="tot-l">Min</span></div>` : '') +
-    (totalHangers > 0 ? `<div class="tot-chip"><span class="tot-n">${totalHangers}</span><span class="tot-l">Hangers</span></div>` : '') +
+    (totalHangers > 0 ? `<div class="tot-chip c-hang"><span class="tot-n">${totalHangers}</span><span class="tot-l">Hangers</span></div>` : '') +
     chips.filter(c=>c.v).map(c => `
       <div class="tot-chip ${c.cls}">
         <span class="tot-n">${c.v}</span>
         <span class="tot-l">${c.l}</span>
       </div>`).join('') +
-    (appts ? `<div class="tot-chip"><span class="tot-n">${appts}</span><span class="tot-l">Appt</span></div>` : '') +
-    (lunches ? `<div class="tot-chip"><span class="tot-n">${lunches}</span><span class="tot-l">Break</span></div>` : '');
+    (appts ? `<div class="tot-chip c-appt"><span class="tot-n">${appts}</span><span class="tot-l">Appt</span></div>` : '');
 }
 
 // ── RATES (conversion funnel — deliberate modal, kept off the main screen) ──
 function ratePct(num, den) { return den > 0 ? Math.round((num / den) * 100) : null; }
 function openRatesModal() { renderRates(); document.getElementById('modal-rates').classList.add('open'); }
 function renderRates() {
-  const { premises, contacts, inspections } = computeDayTotals(day);
+  const t = computeDayTotals(day);
+  const { premises, contacts, inspections, apptInspections, tallies } = t;
+  // Reachable premises = doors you could actually knock. Vacancies can never
+  // convert, so pulling them out of the denominator stops them dragging the % down.
+  const vacant = (tallies.vacantLot || 0) + (tallies.vacantPremises || 0);
+  const reachable = Math.max(0, premises - vacant);
   const rows = [
-    { label:'Premise → Contact',    num:contacts,    den:premises, unit:'premises', accent:'var(--moss)' },
-    { label:'Premise → Inspection', num:inspections, den:premises, unit:'premises', accent:'var(--danger)' },
-    { label:'Contact → Inspection', num:inspections, den:contacts, unit:'contacts',  accent:'var(--ochre)' },
+    { label:'Premise → Contact',    num:contacts,    den:reachable, unit:'reachable', accent:'var(--moss)' },
+    { label:'Premise → Inspection', num:inspections, den:reachable, unit:'reachable', accent:'var(--danger)' },
+    { label:'Contact → Inspection', num:inspections, den:contacts,  unit:'contacts',  accent:'var(--ochre)' },
   ];
   const anyData = (premises + contacts + inspections) > 0;
   document.getElementById('rates-empty').style.display = anyData ? 'none' : '';
-  document.getElementById('rates-funnel').innerHTML = !anyData ? '' : rows.map(r => {
+  const funnel = !anyData ? '' : rows.map(r => {
     const pct = ratePct(r.num, r.den);
     return `<div class="rate-row" style="border-left-color:${r.accent}">
       <div class="rate-info">
@@ -2302,6 +2557,13 @@ function renderRates() {
       <div class="rate-pct ${pct == null ? 'na' : ''}">${pct == null ? '—' : pct + '%'}</div>
     </div>`;
   }).join('');
+  // Vacancy + appointment footnotes: shown so the numbers are transparent, kept
+  // out of the conversion math above.
+  const notes = [];
+  if (anyData && vacant > 0) notes.push(`${vacant} ${vacant === 1 ? 'vacancy' : 'vacancies'} removed from the premise count`);
+  if (anyData && apptInspections > 0) notes.push(`+${apptInspections} inspection${apptInspections === 1 ? '' : 's'} from appointments (counted in totals, not in these rates)`);
+  document.getElementById('rates-funnel').innerHTML =
+    funnel + (notes.length ? `<div class="rates-note">${notes.map(n => `<div>• ${n}</div>`).join('')}</div>` : '');
 }
 
 // ── CLEAR ──
