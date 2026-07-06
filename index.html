@@ -84,6 +84,13 @@ header { background:var(--header-bg); padding:0.9rem 1.25rem 0; position:sticky;
 
 .content { padding:1rem 1.25rem 9.5rem; }
 
+/* BACKFILL BANNER */
+#backfill-banner { display:none; align-items:center; justify-content:space-between; gap:0.6rem; margin:0.15rem 0 0.9rem; padding:0.6rem 0.85rem; background:var(--ochre); color:#fff; border-radius:8px; cursor:pointer; box-shadow:0 2px 0 rgba(0,0,0,0.18); }
+#backfill-banner .bfb-txt { font-family:'Space Mono',monospace; font-size:0.74rem; letter-spacing:0.04em; }
+#backfill-banner .bfb-txt b { font-weight:700; }
+#backfill-banner .bfb-today { flex-shrink:0; background:rgba(255,255,255,0.22); border:1px solid rgba(255,255,255,0.55); color:#fff; font-family:'Space Mono',monospace; font-size:0.7rem; letter-spacing:0.05em; padding:0.32rem 0.6rem; border-radius:5px; cursor:pointer; }
+#backfill-banner .bfb-today:active { background:rgba(255,255,255,0.35); }
+
 /* SETUP */
 #screen-setup { display:none; }
 #screen-setup.active { display:block; }
@@ -141,12 +148,17 @@ header { background:var(--header-bg); padding:0.9rem 1.25rem 0; position:sticky;
 .cal-nav button { background:none; border:1px solid var(--border2); border-radius:5px; color:var(--text); font-size:1.05rem; width:34px; height:34px; line-height:1; cursor:pointer; transition:all .15s; }
 .cal-nav button:hover { border-color:var(--ochre); color:var(--ochre); }
 .cal-period { font-family:'Space Mono',monospace; font-size:0.8rem; letter-spacing:0.06em; color:var(--text); text-transform:uppercase; }
+.cal-backfill { position:relative; display:flex; align-items:center; justify-content:center; margin-bottom:0.85rem; padding:0.55rem; border:1px dashed var(--ochre); border-radius:6px; color:var(--ochre); font-family:'Space Mono',monospace; font-size:0.7rem; letter-spacing:0.08em; text-transform:uppercase; cursor:pointer; }
+.cal-backfill input { position:absolute; inset:0; opacity:0; width:100%; height:100%; cursor:pointer; }
 /* week view */
 .cal-week { display:flex; flex-direction:column; gap:0.4rem; }
 .cal-wcell { display:flex; align-items:center; gap:0.75rem; background:var(--surface); border:1px solid var(--border); border-left:3px solid var(--border2); border-radius:7px; padding:0.6rem 0.85rem; }
 .cal-wcell.has { border-left-color:var(--moss); cursor:pointer; transition:transform .1s; }
 .cal-wcell.has:active { transform:scale(0.99); }
 .cal-wcell.today { border-left-color:var(--ochre); }
+.cal-wcell.addable { cursor:pointer; border-left-style:dashed; }
+.cal-wcell.addable:active { transform:scale(0.99); }
+.cal-wcell.addable .cal-none { color:var(--ochre); font-style:normal; letter-spacing:0.03em; }
 .cal-wdate { display:flex; flex-direction:column; align-items:center; min-width:38px; }
 .cal-wdow { font-family:'Space Mono',monospace; font-size:0.55rem; letter-spacing:0.06em; color:var(--muted); text-transform:uppercase; }
 .cal-wnum { font-family:'Jost',sans-serif; font-size:1.35rem; font-weight:600; color:var(--text); line-height:1.05; }
@@ -166,6 +178,15 @@ header { background:var(--header-bg); padding:0.9rem 1.25rem 0; position:sticky;
 .cal-mnum { font-family:'Space Mono',monospace; font-size:0.72rem; color:var(--text); }
 .cal-mcell.dim .cal-mnum { color:var(--muted); }
 .cal-mdot { margin-top:auto; font-family:'Space Mono',monospace; font-size:0.66rem; font-weight:700; color:var(--ochre); }
+.cal-mcell.addable { cursor:pointer; }
+.cal-mcell.addable .cal-mnum { color:var(--ochre-dim, var(--ochre)); opacity:0.75; }
+.cal-madd { margin-top:auto; font-family:'Space Mono',monospace; font-size:0.8rem; font-weight:700; color:var(--ochre); opacity:0.55; line-height:1; }
+/* day-detail edit/delete */
+.cal-day-actions { display:flex; gap:0.5rem; margin-bottom:0.9rem; }
+.cal-edit-day { flex:1; background:var(--moss); border:none; color:#fff; font-family:'Space Mono',monospace; font-size:0.72rem; letter-spacing:0.06em; padding:0.6rem; border-radius:6px; cursor:pointer; }
+.cal-edit-day:active { transform:scale(0.99); }
+.cal-del-day { flex-shrink:0; background:none; border:1px solid var(--border2); color:var(--muted); font-family:'Space Mono',monospace; font-size:0.72rem; padding:0.6rem 0.75rem; border-radius:6px; cursor:pointer; }
+.cal-del-day:active { color:var(--danger); border-color:var(--danger); }
 /* overall log + day-detail summary */
 .cal-overall { margin-top:1.3rem; background:var(--surface); border:1.5px solid var(--card-line); border-top:3px solid var(--ochre); border-radius:9px; padding:1rem; }
 .cal-overall-lbl { font-family:'Space Mono',monospace; font-size:0.57rem; letter-spacing:0.2em; color:var(--ochre); text-transform:uppercase; margin-bottom:0.8rem; }
@@ -617,6 +638,12 @@ header { background:var(--header-bg); padding:0.9rem 1.25rem 0; position:sticky;
 
 <div class="content">
 
+  <!-- Backfill banner: only shows while editing a past day -->
+  <div id="backfill-banner" onclick="backToToday()">
+    <span class="bfb-txt">Backfilling <b id="backfill-banner-date"></b></span>
+    <button class="bfb-today" onclick="event.stopPropagation();backToToday()">Today →</button>
+  </div>
+
   <!-- ── SETUP ── -->
   <div id="screen-setup">
     <div style="height:1rem"></div>
@@ -825,6 +852,10 @@ header { background:var(--header-bg); padding:0.9rem 1.25rem 0; position:sticky;
         <span class="cal-period" id="cal-period"></span>
         <button onclick="calNav(1)" aria-label="Next">›</button>
       </div>
+      <label class="cal-backfill">
+        <span>＋ Log another day</span>
+        <input type="date" id="cal-backfill-date" onchange="openDayForEdit(this.value)">
+      </label>
     </div>
     <div id="cal-body"></div>
   </div>
@@ -1158,6 +1189,7 @@ let teamEditSel = [];
 let zonePairs = [];
 let editZonePairs = [];
 let editingRunId = null;
+let editingNewRun = false;   // true while the edit sheet is entering a brand-new (backfill) run
 let editSpecials = [];
 let gpsStreet = '';
 let addStreetOpen = false;
@@ -1428,16 +1460,57 @@ function apptInspCount(d) {
 
 // ── ROUTING ──
 let view = 'day';       // 'day' | 'calendar'
+let focusDate = null;   // the date currently open on the day/setup screen; null = today (normal use)
+function curDate() { return focusDate || todayStr(); }
 function route() {
-  const isToday = day && day.date === todayStr();
+  const focus = curDate();
   const cal = view === 'calendar';
+  // The main screen shows whenever a begun day for the focused date is open;
+  // otherwise the setup screen (start a day for that date). With focusDate null
+  // this is exactly the old today-vs-setup behavior.
+  const openDay = !!(day && day.date === focus);
   document.getElementById('screen-calendar').classList.toggle('active', cal);
-  document.getElementById('screen-setup').classList.toggle('active', !cal && !isToday);
-  document.getElementById('screen-main').classList.toggle('active', !cal && isToday);
-  document.getElementById('header-date').textContent = shortDay(todayStr());
+  document.getElementById('screen-setup').classList.toggle('active', !cal && !openDay);
+  document.getElementById('screen-main').classList.toggle('active', !cal && openDay);
+  document.getElementById('header-date').textContent = shortDay(focus);
+  updateBackfillBanner(cal);
   if (cal) { document.getElementById('totals-bar').classList.remove('show'); renderCalendar(); }
-  else if (!isToday) renderSetup();
+  else if (!openDay) renderSetup();
   else renderMain();
+}
+// The "you're editing a past day" banner + a way back to today. Hidden entirely
+// during normal same-day use and in the calendar.
+function updateBackfillBanner(cal) {
+  const b = document.getElementById('backfill-banner');
+  if (!b) return;
+  const backfilling = !cal && focusDate && focusDate !== todayStr();
+  b.style.display = backfilling ? 'flex' : 'none';
+  if (backfilling) document.getElementById('backfill-banner-date').textContent = niceDate(focusDate);
+}
+// Open a past (or today's) date on the day screen — reuses every run-entry tool.
+function openDayForEdit(ds) {
+  if (!ds || ds > todayStr()) return;   // no logging the future
+  focusDate = ds;
+  day = archive[ds] || null;
+  if (day) { day.runs = day.runs || []; day.events = day.events || []; day.appointments = day.appointments || []; day.teamComp = day.teamComp || []; }
+  view = 'day'; calSelected = null;
+  route();
+}
+function backToToday() {
+  focusDate = null;
+  day = archive[todayStr()] || null;
+  view = 'day'; calSelected = null;
+  route();
+}
+function deleteDayLog(ds) {
+  if (!ds || !archive[ds]) return;
+  if (!confirm(`Delete the entire log for ${niceDate(ds)}? This cannot be undone.`)) return;
+  delete archive[ds];
+  idbSet('days', archive);
+  if (day && day.date === ds) { day = null; idbSet('day', null); }
+  if (focusDate === ds) focusDate = null;
+  calSelected = null; view = 'calendar';
+  route();
 }
 
 // ── CALENDAR / HISTORY ──
@@ -1496,6 +1569,8 @@ function renderCalendar() {
   controls.style.display = '';
   title.textContent = 'Field History';
   back.textContent = '◂ Back';
+  const bf = document.getElementById('cal-backfill-date');
+  if (bf) { bf.max = todayStr(); bf.value = ''; }
   document.getElementById('cal-mode-week').classList.toggle('on', calMode === 'week');
   document.getElementById('cal-mode-month').classList.toggle('on', calMode === 'month');
   const periodKeys = calMode === 'week' ? weekDateStrs() : monthDateStrs();
@@ -1534,10 +1609,12 @@ function renderCalWeek() {
   const today = todayStr();
   const rows = days.map(d => {
     const ds = fmtDay(d), dObj = archive[ds], isToday = ds === today, dow = CAL_DOW[d.getDay()];
+    const isFuture = ds > today;
     if (!dObj) {
-      return `<div class="cal-wcell${isToday ? ' today' : ''}">
+      const tap = isFuture ? '' : ` onclick="openDayForEdit('${ds}')"`;
+      return `<div class="cal-wcell${isToday ? ' today' : ''}${isFuture ? '' : ' addable'}"${tap}>
         <div class="cal-wdate"><span class="cal-wdow">${dow}</span><span class="cal-wnum">${d.getDate()}</span></div>
-        <div class="cal-none">${isToday ? 'Today — no log yet' : 'No log'}</div>
+        <div class="cal-none">${isToday ? 'Today — no log yet' : (isFuture ? 'No log' : '＋ Add a log')}</div>
       </div>`;
     }
     const tot = computeDayTotals(dObj);
@@ -1568,7 +1645,9 @@ function renderCalMonth() {
       const tot = computeDayTotals(dObj);
       cells.push(`<div class="cal-mcell has${isToday ? ' today' : ''}" onclick="calSelectDay('${ds}')"><span class="cal-mnum">${dn}</span><span class="cal-mdot">${tot.premises || '·'}</span></div>`);
     } else {
-      cells.push(`<div class="cal-mcell dim${isToday ? ' today' : ''}"><span class="cal-mnum">${dn}</span></div>`);
+      const isFuture = ds > today;
+      const tap = isFuture ? '' : ` onclick="openDayForEdit('${ds}')"`;
+      cells.push(`<div class="cal-mcell dim${isToday ? ' today' : ''}${isFuture ? '' : ' addable'}"${tap}><span class="cal-mnum">${dn}</span>${isFuture ? '' : '<span class="cal-madd">＋</span>'}</div>`);
     }
   }
   const dow = ['S','M','T','W','T','F','S'].map(x => `<span>${x}</span>`).join('');
@@ -1606,11 +1685,15 @@ function renderAggregate(keys, label, accent) {
 // When you tend to catch people. Runs only carry start/stop + totals (not a
 // timestamp per contact), so this is bucketed by run-start into day-parts —
 // honest, not fake minute-precision. Successful appointments use their own time.
+// Two-hour blocks across the working day (8a–6p). The first & last buckets are
+// generous on the ends so an early start (the old 7:30 schedule) or a late one
+// never falls out of the stats — it just folds into the 8–10 / 4–6 block.
 const TOD_PARTS = [
-  { key:'morning',   label:'Morning',   sub:'5–11a',  lo:5,  hi:11 },
-  { key:'midday',    label:'Midday',    sub:'11–2p',  lo:11, hi:14 },
-  { key:'afternoon', label:'Afternoon', sub:'2–5p',   lo:14, hi:17 },
-  { key:'evening',   label:'Evening',   sub:'5–9p',   lo:17, hi:21 },
+  { key:'b8',  label:'8–10a', sub:'start',     lo:0,  hi:10 },
+  { key:'b10', label:'10–12', sub:'morning',   lo:10, hi:12 },
+  { key:'b12', label:'12–2p', sub:'midday',    lo:12, hi:14 },
+  { key:'b2',  label:'2–4p',  sub:'afternoon', lo:14, hi:16 },
+  { key:'b4',  label:'4–6p',  sub:'late',      lo:16, hi:24 },
 ];
 function todPartFor(hhmm) {
   if (!hhmm) return null;
@@ -1710,7 +1793,11 @@ function renderDayDetail(ds) {
     ? `<div style="height:0.9rem"></div>
        <div class="cal-note-card"><div class="cal-note-lbl">✎ Day Notes</div><div class="cal-note-body">${esc(d.note.trim())}</div></div>`
     : '';
-  return `<div class="cal-overall">
+  return `<div class="cal-day-actions">
+      <button class="cal-edit-day" onclick="openDayForEdit('${ds}')">✎ Edit this day</button>
+      <button class="cal-del-day" onclick="deleteDayLog('${ds}')">🗑 Delete</button>
+    </div>
+    <div class="cal-overall">
       <div class="cal-overall-lbl">Day Totals · ${team}</div>
       <div class="cal-og">
         <div class="cal-ostat"><b>${tot.premises}</b><span>Premises</span></div>
@@ -1727,7 +1814,13 @@ function renderDayDetail(ds) {
 // ── SETUP ──
 function renderSetup() {
   setupSel = []; setupAppts = [];
-  document.getElementById('setup-date').textContent = niceDate(todayStr());
+  const backfilling = focusDate && focusDate !== todayStr();
+  document.getElementById('setup-date').textContent = niceDate(curDate());
+  const eb = document.querySelector('#screen-setup .setup-eyebrow');
+  const ti = document.querySelector('#screen-setup .setup-title');
+  if (eb) eb.textContent = backfilling ? 'Backfill' : 'New Day';
+  if (ti) ti.textContent = backfilling ? 'Who was on the team?' : "Who's on the team today?";
+  document.getElementById('begin-btn').textContent = backfilling ? 'Begin This Log' : 'Begin Day Log';
   renderSetupChips(); renderSetupAppts();
   document.getElementById('sap-time').value = '09:00';
 }
@@ -1784,7 +1877,7 @@ function renderSetupAppts() {
 function startDay() {
   if (!setupSel.length) return;
   day = {
-    date: todayStr(), teamComp: [...setupSel], compChanges: [], runs: [],
+    date: curDate(), teamComp: [...setupSel], compChanges: [], runs: [],
     appointments: setupAppts.map(a=>({...a, result: a.result || ''})),
     events: setupAppts.map(a=>({ type:'appointment', id:a.id, time:a.time, address:a.address, result:a.result || '' }))
   };
@@ -1798,6 +1891,15 @@ function renderMain() {
   document.getElementById('run-card').style.display = run ? 'block' : 'none';
   document.getElementById('start-run-btn').disabled = !!run;
   document.getElementById('start-run-btn').style.opacity = run ? '0.38' : '1';
+  // On a backfilled day there's no live tally — the run button opens the full
+  // run form (start/stop/premises/tallies) so a whole finished run goes in at once.
+  // "Clear Day" is a today-only tool; past days manage themselves via History.
+  const backfill = curDate() !== todayStr();
+  const srBtn = document.getElementById('start-run-btn');
+  srBtn.textContent = backfill ? '＋ Add a Run' : '▶ Start Run';
+  srBtn.onclick = backfill ? addBackfillRun : openRunModal;
+  const clearBtn = document.getElementById('clear-btn');
+  if (clearBtn) clearBtn.style.display = backfill ? 'none' : '';
   if (run) { renderActiveRun(run); startTimer(run); }
   else stopTimer();
   renderLog(); renderTotals();
@@ -2083,32 +2185,51 @@ function stepTime(id, deltaMin, fallbackId) {
   const total = ((h * 60 + m) + deltaMin + 1440) % 1440;
   el.value = String(Math.floor(total / 60)).padStart(2, '0') + ':' + String(total % 60).padStart(2, '0');
 }
+// Backfill: enter a whole finished run at once through the edit sheet (nothing is
+// written until Save, so a cancel leaves no ghost run behind).
+function addBackfillRun() { if (day) openEditRunModal('new'); }
+
 function openEditRunModal(runId = null) {
-  const targetId = runId || activeRun()?.id;
-  const run = day?.runs?.find(r => r.id === targetId);
-  if (!run) return;
-  editingRunId = run.id;
-  editZonePairs = (run.coverageZone || []).map(z => ({ street: z.street || '', blockRange: z.blockRange || '100s' }));
-  if (!editZonePairs.length) editZonePairs = [{ street: lastRunStreet(), blockRange: '100s' }];
-  editSpecials = (run.specials || []).map(s => ({ ...s }));
-  document.getElementById('edit-run-start-time').value = run.startTime || '';
-  document.getElementById('edit-run-stop-time').value = run.stopTime || '';
-  document.getElementById('edit-run-premises-count').value = run.premisesCount ?? '';
-  document.getElementById('edit-run-premises-final').value = run.premisesFinal ?? '';
-  const t = run.tallies || defaultTallies();
+  const isNew = runId === 'new';
+  editingNewRun = isNew;
+  const modal = document.getElementById('modal-edit-run');
+  const eb = modal.querySelector('.sheet-eyebrow');
+  const ti = modal.querySelector('.sheet-title');
+  if (eb) eb.textContent = isNew ? 'Add Run' : 'Edit Run';
+  if (ti) ti.textContent = isNew ? 'New Run' : 'Run Details';
+  const run = isNew ? null : (day?.runs?.find(r => r.id === (runId || activeRun()?.id)));
+  if (!isNew && !run) return;
+  editingRunId = run ? run.id : null;
+  editZonePairs = ((run && run.coverageZone) || []).map(z => ({ street: z.street || '', blockRange: z.blockRange || '100s' }));
+  if (!editZonePairs.length) editZonePairs = [{ street: isNew ? '' : lastRunStreet(), blockRange: '100s' }];
+  editSpecials = ((run && run.specials) || []).map(s => ({ ...s }));
+  document.getElementById('edit-run-start-time').value = run ? (run.startTime || '') : '';
+  document.getElementById('edit-run-stop-time').value = run ? (run.stopTime || '') : '';
+  document.getElementById('edit-run-premises-count').value = run ? (run.premisesCount ?? '') : '';
+  document.getElementById('edit-run-premises-final').value = run ? (run.premisesFinal ?? '') : '';
+  const t = (run && run.tallies) || defaultTallies();
   ['inspection','refused','ss','vacantLot','vacantPremises','mapCallElim','newConstruction'].forEach(key => {
     const el = document.getElementById(`edit-tally-${key}`);
     if (el) el.value = t[key] ?? 0;
   });
   renderEditZonePairs();
   renderEditSpecials();
-  document.getElementById('modal-edit-run').classList.add('open');
+  modal.classList.add('open');
 }
 function saveEditedRun() {
-  const run = day?.runs?.find(r => r.id === editingRunId);
-  if (!run) return;
   const validZones = editZonePairs.map(z => ({ street: normalizeStreetName(z.street), blockRange: String(z.blockRange || '').trim() || '100s' })).filter(z => z.street);
-  if (!validZones.length) return;
+  if (!validZones.length) return;   // need at least one street — otherwise a new run is never created
+  let run;
+  if (editingNewRun) {
+    run = { id: Date.now(), coverageZone: [], startTime: '', startTimeEstimated: false,
+      stopTime: null, status: 'closed', premisesCount: null, premisesFinal: null,
+      tallies: defaultTallies(), specials: [], addresses: [] };
+    day.runs.push(run);
+    editingRunId = run.id; editingNewRun = false;
+  } else {
+    run = day?.runs?.find(r => r.id === editingRunId);
+  }
+  if (!run) return;
   run.coverageZone = validZones;
   run.startTime = document.getElementById('edit-run-start-time').value || run.startTime || nowTime();
   const stopVal = document.getElementById('edit-run-stop-time').value || null;
@@ -2711,6 +2832,10 @@ function migrateDayTallies() {
     const a = await idbGet('days');
     if (a && typeof a === 'object') archive = a;
     if (day && day.date && !archive[day.date]) { archive[day.date] = day; await idbSet('days', archive); }
+    // Always boot into today: resume today's day if it was begun, else the setup
+    // screen. (Guards against a backfill session having left a past day in idb.)
+    focusDate = null;
+    day = archive[todayStr()] || null;
   } catch (e) { /* defaults already set above */ }
 
   migrateDayTallies();
